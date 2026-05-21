@@ -1,0 +1,121 @@
+/* css/themes.css */
+
+:root {
+    /* Dark Mode (Default / Night) - Soft warm dark slate */
+    --bg-color: #121214;
+    --bg-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(0, 0, 0, 0.05) 100%);
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-hover-bg: rgba(255, 255, 255, 0.12);
+    --text-main: #f1f1f4;
+    --text-muted: #8e8e93;
+    --exam-color: #fdcb6e;
+    
+    --input-bg: rgba(0, 0, 0, 0.25);
+    --input-border: rgba(255, 255, 255, 0.15);
+    --input-color: #ffffff;
+    --table-header-bg: rgba(0, 0, 0, 0.35);
+    --glass-shadow: rgba(0, 0, 0, 0.4);
+
+    /* Rudolph (BF) Default Subjects - soft colors for dark theme */
+    --math-color: #ff6b81;
+    --physics-color: #70a1ff;
+    --cs-color: #7bed9f;
+    --bus-color: #ffa502;
+    --span-color: #ff7f50;
+    --eng-color: #a29bfe;
+    
+    /* Mahi (GF) Specific Subjects - mapped to unified colors */
+    --econ-color: #ffa502;
+    --bio-color: #7bed9f;
+    --chem-color: #70a1ff;
+}
+
+[data-theme="light"] {
+    /* Light Mode (Day) - Soft off-white to prevent eye strain */
+    --bg-color: #f5f5f7;
+    --bg-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(0, 0, 0, 0.05) 100%);
+    --card-bg: rgba(0, 0, 0, 0.02);
+    --card-border: rgba(0, 0, 0, 0.08);
+    --card-hover-bg: rgba(0, 0, 0, 0.06);
+    --text-main: #1c1c1e;
+    --text-muted: #68686e;
+    --exam-color: #d97706; /* high contrast amber */
+    
+    --input-bg: #ffffff;
+    --input-border: rgba(0, 0, 0, 0.15);
+    --input-color: #1c1c1e;
+    --table-header-bg: rgba(0, 0, 0, 0.04);
+    --glass-shadow: rgba(0, 0, 0, 0.06);
+
+    /* Rudolph (BF) Default Subjects - high contrast for light mode */
+    --math-color: #e84118;
+    --physics-color: #0984e3;
+    --cs-color: #20bf6b;
+    --bus-color: #d97706;
+    --span-color: #e67e22;
+    --eng-color: #6c5ce7;
+    
+    /* Mahi (GF) Specific Subjects - high contrast */
+    --econ-color: #d97706;
+    --bio-color: #20bf6b;
+    --chem-color: #0984e3;
+}
+
+/* Subject Tag Colors */
+.tag.math { background: rgba(255, 71, 87, 0.12); color: var(--math-color); border: 1px solid var(--math-color); }
+.tag.physics { background: rgba(30, 144, 255, 0.12); color: var(--physics-color); border: 1px solid var(--physics-color); }
+.tag.cs { background: rgba(46, 213, 115, 0.12); color: var(--cs-color); border: 1px solid var(--cs-color); }
+.tag.bus { background: rgba(255, 165, 2, 0.12); color: var(--bus-color); border: 1px solid var(--bus-color); }
+.tag.span { background: rgba(255, 127, 80, 0.12); color: var(--span-color); border: 1px solid var(--span-color); }
+.tag.eng { background: rgba(156, 136, 255, 0.12); color: var(--eng-color); border: 1px solid var(--eng-color); }
+.tag.exam { background: rgba(236, 204, 104, 0.12); color: var(--exam-color); border: 1px solid var(--exam-color); }
+.tag.econ { background: rgba(255, 165, 2, 0.12); color: var(--econ-color); border: 1px solid var(--econ-color); }
+.tag.bio { background: rgba(46, 213, 115, 0.12); color: var(--bio-color); border: 1px solid var(--bio-color); }
+.tag.chem { background: rgba(0, 210, 255, 0.12); color: var(--chem-color); border: 1px solid var(--chem-color); }
+
+/* Timeline Task Item Borders */
+.task-item.math { border-left-color: var(--math-color); }
+.task-item.physics { border-left-color: var(--physics-color); }
+.task-item.cs { border-left-color: var(--cs-color); }
+.task-item.bus { border-left-color: var(--bus-color); }
+.task-item.span { border-left-color: var(--span-color); }
+.task-item.eng { border-left-color: var(--eng-color); }
+.task-item.exam { border-left-color: var(--exam-color); background: rgba(236, 204, 104, 0.05); }
+.task-item.econ { border-left-color: var(--econ-color); }
+.task-item.bio { border-left-color: var(--bio-color); }
+.task-item.chem { border-left-color: var(--chem-color); }
+
+/* Checkbox Custom Colors on Checked State */
+.task-item.math input:checked ~ .checkmark { background-color: var(--math-color); border-color: var(--math-color); }
+.task-item.physics input:checked ~ .checkmark { background-color: var(--physics-color); border-color: var(--physics-color); }
+.task-item.cs input:checked ~ .checkmark { background-color: var(--cs-color); border-color: var(--cs-color); }
+.task-item.bus input:checked ~ .checkmark { background-color: var(--bus-color); border-color: var(--bus-color); }
+.task-item.span input:checked ~ .checkmark { background-color: var(--span-color); border-color: var(--span-color); }
+.task-item.eng input:checked ~ .checkmark { background-color: var(--eng-color); border-color: var(--eng-color); }
+.task-item.exam input:checked ~ .checkmark { background-color: var(--exam-color); border-color: var(--exam-color); }
+.task-item.econ input:checked ~ .checkmark { background-color: var(--econ-color); border-color: var(--econ-color); }
+.task-item.bio input:checked ~ .checkmark { background-color: var(--bio-color); border-color: var(--bio-color); }
+.task-item.chem input:checked ~ .checkmark { background-color: var(--chem-color); border-color: var(--chem-color); }
+
+/* Mistakes Cards Border Left Colors */
+.mistake-card.math { border-left-color: var(--math-color); }
+.mistake-card.physics { border-left-color: var(--physics-color); }
+.mistake-card.cs { border-left-color: var(--cs-color); }
+.mistake-card.bus { border-left-color: var(--bus-color); }
+.mistake-card.span { border-left-color: var(--span-color); }
+.mistake-card.eng { border-left-color: var(--eng-color); }
+.mistake-card.econ { border-left-color: var(--econ-color); }
+.mistake-card.bio { border-left-color: var(--bio-color); }
+.mistake-card.chem { border-left-color: var(--chem-color); }
+
+/* Recent Shifts log colors */
+.shifts-log-subject.math { color: var(--math-color); }
+.shifts-log-subject.physics { color: var(--physics-color); }
+.shifts-log-subject.cs { color: var(--cs-color); }
+.shifts-log-subject.span { color: var(--span-color); }
+.shifts-log-subject.bus { color: var(--bus-color); }
+.shifts-log-subject.eng { color: var(--eng-color); }
+.shifts-log-subject.econ { color: var(--econ-color); }
+.shifts-log-subject.bio { color: var(--bio-color); }
+.shifts-log-subject.chem { color: var(--chem-color); }

@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBDP Mocks Study Timetable & Study Portal</title>
+    <meta name="description" content="A premium modular Single-Page Application study portal and mock exams preparation planner with Firestore sync, custom Pomodoro timer, dynamic schedules, and mistakes log.">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- Inline Theme Initializer (Prevents color flash on page load) -->
+    <script>
+        (function() {
+            const cachedTheme = localStorage.getItem('mocks_theme');
+            if (cachedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            } else if (!cachedTheme) {
+                const hour = new Date().getHours();
+                if (hour >= 7 && hour < 19) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
+            }
+        })();
+    </script>
+</head>
+<body>
+    <!-- User Selection Portal Overlay (Instant choice on first entry) -->
+    <div id="user-portal" class="user-portal-overlay">
+        <h1 class="portal-title">Y12 Mocks Study Timetable</h1>
+        <div class="portal-cards">
+            <div class="portal-card bf-card" onclick="selectPortalUser('BF')">
+                <span class="portal-card-icon">👻</span>
+                <div class="portal-card-name">Rudolph</div>
+                <div class="portal-card-desc">Math AA HL, Physics HL, CS HL, Spanish, Business SL, English SL</div>
+            </div>
+            <div class="portal-card gf-card" onclick="selectPortalUser('GF')">
+                <span class="portal-card-icon">🦋</span>
+                <div class="portal-card-name">Mahi</div>
+                <div class="portal-card-desc">Econ HL, Bio HL, Chem HL, English SL, Spanish ab initio, Math AA SL</div>
+            </div>
+        </div>
+    </div>
+    <!-- Inline script to hide portal immediately to prevent visual layout flicker -->
+    <script>
+        if (localStorage.getItem('mocks_study_plan_current_user')) {
+            document.getElementById('user-portal').classList.add('fade-out');
+        }
+    </script>
+
+    <div class="container">
+        <!-- Top Right Controls -->
+        <div class="top-controls">
+            <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">🌙 Light/Dark Mode</button>
+            <button id="profile-switcher-btn" class="profile-btn" onclick="showUserPortal()">👤 Change Profile</button>
+        </div>
+        
+        <!-- Header Hero section -->
+        <header class="hero">
+            <h1 id="hero-title">Y12 Mocks Study Timetable</h1>
+            <p>Track study leave shifts, log key past paper mistakes, and see live statistics.</p>
+            <div id="dynamic-status-banner" class="dynamic-banner">
+                <span id="dynamic-status-text">⚡ Grind Mode: Active</span>
+            </div>
+        </header>
+
+        <!-- Target Countdowns Banner -->
+        <div class="countdown-panel">
+            <div class="countdown-title" id="countdown-banner-title">⏱️ DAYS UNTIL EXAMS</div>
+            <div class="countdown-timer" id="countdown-timer-container">
+                <div class="countdown-unit">
+                    <span class="countdown-num" id="days-val">00</span>
+                    <span class="countdown-label">Days</span>
+                </div>
+                <div class="countdown-unit">
+                    <span class="countdown-num" id="hours-val">00</span>
+                    <span class="countdown-label">Hours</span>
+                </div>
+                <div class="countdown-unit">
+                    <span class="countdown-num" id="mins-val">00</span>
+                    <span class="countdown-label">Mins</span>
+                </div>
+                <div class="countdown-unit">
+                    <span class="countdown-num" id="secs-val">00</span>
+                    <span class="countdown-label">Secs</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs-nav" aria-label="Main Navigation">
+            <button class="tab-btn active" data-tab="desk">⚡ Work Desk</button>
+            <button class="tab-btn" data-tab="timetable">📅 Study Timetable</button>
+            <button class="tab-btn" data-tab="blueprint">🗺️ Study Blueprint</button>
+            <button class="tab-btn" data-tab="mistakes">📓 Mistakes Log</button>
+        </nav>
+
+        <!-- Main Content Areas -->
+        <main>
+            <!-- 1. Work Desk Tab Content -->
+            <div id="tab-desk" class="tab-content active">
+                <div class="desk-grid">
+                    <!-- Left Side: Unified Study Console -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div class="glass-panel study-console-panel">
+                            <!-- Live Time Status Header -->
+                            <div class="clock-status clocked-out" id="clock-status">
+                                <span class="pulse-dot" style="display: none;" id="clock-pulse"></span>
+                                <span id="clock-status-text">OFF THE CLOCK</span>
+                            </div>
+                            <div class="live-clock-time" id="live-time">00:00:00</div>
+                            <div class="live-clock-date" id="live-date">Monday, May 18, 2026</div>
+                            
+                            <!-- Shared Subject Selector -->
+                            <div class="form-group" style="text-align: left; margin-bottom: 1.2rem;">
+                                <label for="shift-subject">Select Subject to Study</label>
+                                <select id="shift-subject" class="form-control">
+                                    <!-- Populated dynamically via app.js -->
+                                </select>
+                            </div>
+
+                            <!-- Inner Console Mode Switcher -->
+                            <div class="console-mode-switcher">
+                                <button class="console-tab-btn active" id="console-btn-shift">⚡ Stopwatch</button>
+                                <button class="console-tab-btn" id="console-btn-pomo">⏱️ Pomodoro</button>
+                            </div>
+                            
+                            <!-- Tab Content 1: Stopwatch / Clock-In -->
+                            <div id="console-tab-shift-content" class="console-tab-content active">
+                                <div id="active-session-info" style="display: none; margin-top: 0.5rem; margin-bottom: 1.2rem; color: var(--exam-color); font-weight: 600;">
+                                    Session: <span id="session-duration">0</span> mins
+                                </div>
+                                <button id="btn-clock" class="btn-clock clock-in">Clock In ⚡</button>
+                            </div>
+
+                            <!-- Tab Content 2: Pomodoro Timer -->
+                            <div id="console-tab-pomo-content" class="console-tab-content">
+                                <div class="pomo-modes">
+                                    <button class="pomo-mode-btn active" data-time="3000" data-type="work-50">50/10 Work</button>
+                                    <button class="pomo-mode-btn" data-time="600" data-type="break-10">10m Break</button>
+                                    <button class="pomo-mode-btn" data-time="1500" data-type="work-25">25/5 Work</button>
+                                    <button class="pomo-mode-btn" data-time="300" data-type="break-5">5m Break</button>
+                                </div>
+                                <div class="pomo-timer-display" id="pomo-display">50:00</div>
+                                <div class="pomo-controls">
+                                    <button id="pomo-start" class="pomo-btn start">Start</button>
+                                    <button id="pomo-reset" class="pomo-btn">Reset</button>
+                                    <!-- Custom minutes input for Pomodoro -->
+                                    <div class="pomo-custom-container" style="margin-top: 1.2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+                                        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">CUSTOM:</span>
+                                        <input type="number" id="pomo-custom-input" min="1" max="180" class="form-control" style="width: 70px; padding: 0.3rem 0.5rem; text-align: center; margin-top: 0; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 6px; color: var(--input-color);" placeholder="Mins">
+                                        <button id="pomo-custom-set-btn" class="pomo-btn" style="padding: 0.35rem 0.8rem; font-size: 0.8rem; margin: 0; background: var(--physics-color); border: none; color: #fff; font-weight: bold; border-radius: 6px; cursor: pointer;">Set</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Side: Analytics & Comparison -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Study Comparison Card -->
+                        <div class="glass-panel comparison-panel" id="study-comparison-panel">
+                            <!-- Rendered dynamically via app.js -->
+                        </div>
+
+                        <!-- Analytics Timesheet Summary -->
+                        <div class="glass-panel stats-panel">
+                            <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: var(--exam-color); margin-bottom: 1rem; text-align: center; margin-top: 0;">📊 My Shift Timesheet</h3>
+                            
+                            <!-- Timesheet Sub-tabs Mode Switcher -->
+                            <div class="timesheet-mode-switcher">
+                                <button class="timesheet-tab-btn active" id="timesheet-btn-summary">📊 Summary</button>
+                                <button class="timesheet-tab-btn" id="timesheet-btn-history">📜 History</button>
+                            </div>
+
+                            <!-- Tab Content A: Summary Stats & Breakdown -->
+                            <div id="timesheet-tab-summary-content" class="timesheet-tab-content active">
+                                <div class="stats-grid">
+                                    <div>
+                                        <div class="stat-val" id="stat-today">0.0h</div>
+                                        <div class="stat-label">Today's Work</div>
+                                    </div>
+                                    <div>
+                                        <div class="stat-val" id="stat-total">0.0h</div>
+                                        <div class="stat-label">Total Work</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Subject Breakdown List -->
+                                <div class="subject-breakdown-container" id="subject-breakdown-list">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Tab Content B: Recent Sessions History Log -->
+                            <div id="timesheet-tab-history-content" class="timesheet-tab-content">
+                                <div class="shifts-log-container">
+                                    <h4 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Recent Sessions Log</h4>
+                                    <div id="shifts-log-list">
+                                        <!-- Rendered dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Weekly Timetable Tab Content (Double-click cells to edit) -->
+            <div id="tab-timetable" class="tab-content">
+                <div class="glass-panel">
+                    <h2 style="color: var(--exam-color); font-family: 'Outfit'; margin-top: 0;">📅 Weekly Shift Schedule</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Treat study like a job. Here are your scheduled shift blocks. Double-click any cell to edit your goals for that block.</p>
+                    
+                    <div class="timetable-container">
+                        <table class="timetable-table">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>🌅 Morning Block<br><span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">09:00 - 12:00</span></th>
+                                    <th>☀️ Afternoon Block<br><span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">14:00 - 17:00</span></th>
+                                    <th>🌙 Evening Block<br><span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">18:00 - 20:00</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="timetable-body">
+                                <!-- Populated dynamically via app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Study Blueprint Tab Content -->
+            <div id="tab-blueprint" class="tab-content">
+                
+                <!-- Blueprint Tab Switcher -->
+                <div class="blueprint-mode-switcher">
+                    <button class="blueprint-tab-btn active" id="blueprint-btn-strategy">🧠 Strategy & Focus</button>
+                    <button class="blueprint-tab-btn" id="blueprint-btn-timeline">🗺️ Target Timeline</button>
+                </div>
+                
+                <!-- ==========================================
+                     BF BLUEPRINT CONTENT (Rudolph)
+                     ========================================== -->
+                <div id="blueprint-content-bf">
+                    <div id="bf-strategy-view" class="blueprint-section active">
+                        <div class="grid-2">
+                        <div class="glass-panel tips-section">
+                            <h2>🧠 Strategy & Mindset</h2>
+                            <ul>
+                                <li><strong>The "Level Up" Protocol:</strong> Math and Physics are currently at 2s. We are fixing this entirely through <em>Topical Past Papers</em>. No passive reading. Do a question, check the mark scheme, understand the gap, repeat.</li>
+                                <li><strong>The 3-Step Study Debugging Protocol (For Stuck Questions):</strong>
+                                    <ol style="margin-top: 0.3rem; padding-left: 1.2rem; color: var(--text-muted); font-size: 0.9rem;">
+                                        <li><strong style="color: #fff;">3-Min Struggle:</strong> Look at formula booklet, sketch forces/graphs. Prime your brain before looking at solutions!</li>
+                                        <li><strong style="color: #fff;">Smart Peeking:</strong> Cover the mark scheme, peek *only* the first equation/line. Open notes/videos for 5-10m *only* on that specific sub-concept.</li>
+                                        <li><strong style="color: #fff;">Delayed Re-Test:</strong> Put a red star next to the question, erase it, and solve it again completely closed-book at the end of the day.</li>
+                                    </ol>
+                                </li>
+                                <li><strong>English P2 & Spanish Speaking Quote Strategy:</strong> Memorize 10 highly versatile quotes for Gatsby & Kite Runner (themes like power, class, isolation). In Spanish, learn 5 heavy-hitter phrases per Theme. *Always* write a thesis that directly answers the prompt, and start each paragraph with a clear link back to this thesis.</li>
+                                <li><strong>English P1 Speed-Writing (4 A4 Pages Blueprint):</strong> Don't panic! Budget 10m planning, 55m writing, 5m editing. Write a 5-paragraph analysis: 1 Intro, 3 Body (use PEEL: Point, Evidence, Explanation, Link), 1 Conclusion. You can easily fill 4 pages!</li>
+                                <li><strong>Pomodoro 50/10:</strong> During Study Leave, work for 50 minutes, then take a strict 10-minute break. Get up, walk, drink water.</li>
+                                <li><strong>Healthy Hours:</strong> Wake up at 8 AM. Stop studying by 8:30 PM. 11 PM - 12 AM bedtime. Sleep consolidates memory.</li>
+                                <li><strong>Guilt-Free Breaks:</strong> Your evenings are reserved for gaming and texting Mahi. When you rest, rest fully. When you work, work fully.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="glass-panel tips-section">
+                            <h2>📚 Subject Focus</h2>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag math">Math AA HL</span> Ch 1-7, 8 (Binomial Expansion only), 9-13, 17-19, and 20 (Excluding Ch 8A-E Permutations & Combinations, Ch 20A Kinematics, and Integration). Topicals only.
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag physics">Physics HL</span> Theme A (Mechanics & Relativity), Theme B (Thermal, Greenhouse, Gas Laws, Thermo, Circuits), and Theme C (SHM & Waves). Heavy emphasis on problem-solving.
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag cs">CS HL</span> P2 Leaked. Theme B (Computational Thinking, Data Structures, OOP, Big O, File Processing SL & HL Recursion). Option A (Databases SL & HL).
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag span">Spanish B SL</span> 5 Themes (Compartir el planeta, Experiencias, Identidades, Organización social, Ingenio humano) & 5 Text Types.
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag eng">English Lang Lit</span> Gatsby/Kite Runner P2 (Master 10 versatile quotes each & link to question) & Infographics P1 (Speed-writing blueprint to get 4 A4 pages).
+                            </div>
+                            <div>
+                                <span class="tag bus">Business SL</span> Units 1, 2, 3 (SL Only - strictly excluding all HL-only topics like Budgeting & Investment Appraisal).
+                            </div>
+                        </div>
+                    </div>
+                    </div> <!-- End of #bf-strategy-view -->
+
+                    <div id="bf-timeline-view" class="blueprint-section">
+                        <!-- Rudolph Phase Switcher Pills -->
+                        <div class="phase-switcher-container">
+                            <button class="phase-pill active" id="bf-pill-all" onclick="switchBfPhase('all')">All Phases</button>
+                            <button class="phase-pill" id="bf-pill-phase1" onclick="switchBfPhase('phase1')">Phase 1: School Days</button>
+                            <button class="phase-pill" id="bf-pill-phase2" onclick="switchBfPhase('phase2')">Phase 2: Study Leave</button>
+                            <button class="phase-pill" id="bf-pill-phase3" onclick="switchBfPhase('phase3')">Phase 3: Mock Exams</button>
+                        </div>
+
+                        <!-- Phase 1 (School Days) -->
+                        <div id="bf-phase1-container">
+                            <h2 style="margin-top: 2rem;">Phase 1: School Days (Balancing Act)</h2>
+                    <div class="glass-panel">
+                        <div class="timeline-day">
+                            <div class="day-header">Monday, May 18 <span>Light Work</span></div>
+                            <ul class="task-list">
+                                <li class="task-item span">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="school-mon-span">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening</span>
+                                            <strong>Make Mahi's Spanish Speaking Cheatsheet</strong> - Teaching is the best way to learn! Do a light review of your own Spanish vocab alongside this.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Tuesday, May 19 <span>Post-School Hustle</span></div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="school-tue-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">4:00 PM - 5:30 PM</span>
+                                            <strong>Math AA HL: Quadratics & Functions (Ch 1-2)</strong> - Focus on discriminant, graphing, and composite functions.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item physics">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="school-tue-physics">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">6:00 PM - 7:30 PM</span>
+                                            <strong>Physics HL: Theme A (Kinematics & Forces: A1-A2)</strong> - Practice Newton's laws, resolving vectors, and free-body diagrams. Past paper questions only.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Wednesday, May 20 <span>Late Start</span></div>
+                            <ul class="task-list">
+                                <li class="task-item cs">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="school-wed-cs">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">7:00 PM - 8:30 PM</span>
+                                            <strong>CS HL P2: Flowcharts & Trace Tables</strong> - Practice algorithmic thinking. Trace a Bubble Sort and Linear Search algorithm on paper.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item span">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="school-wed-span">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">8:45 PM - 10:00 PM</span>
+                                            <strong>Spanish B: Organización Social & Text Types</strong> - Review the format for 'Artículo' and 'Blog'. Write 5 key phrases for each.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Thursday, May 21</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="school-thu-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">4:00 PM - 5:30 PM</span>
+                                            <strong>Math AA HL: Exponentials & Logs (Ch 3-4)</strong> - Law of logs, solving equations.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item bus">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="school-thu-bus">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">6:00 PM - 7:30 PM</span>
+                                            <strong>Business SL: Unit 1 (SL Only)</strong> - Business organization & environment. Focus on SL definitions, excluding HL extensions.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Friday, May 22 <span>Last day of school!</span></div>
+                            <ul class="task-list">
+                                <li class="task-item eng">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="school-fri-eng">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">4:00 PM - 5:30 PM</span>
+                                            <strong>English P2: The Great Gatsby</strong> - Create 2 essay outlines focusing on theme and character development.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item physics">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="school-fri-physics">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">6:00 PM - 7:30 PM</span>
+                                            <strong>Physics HL: Theme B (Thermal & Gas Laws: B1-B3)</strong> - Study molecular theory, thermal conduction/radiation, greenhouse (B2), and ideal gas equations (B3).
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    </div> <!-- End of #bf-phase1-container -->
+
+                    <!-- Phase 2 (Study Leave) -->
+                    <div id="bf-phase2-container">
+                        <h2 style="margin-top: 2rem;">Phase 2: Study Leave (The Grind)</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">Wake up: 8:00 AM | Sleep: 11:30 PM. Treat this like a job. Evenings are yours.</p>
+                    <div class="grid-3">
+                        <!-- May 23 -->
+                        <div class="glass-panel">
+                            <div class="day-header">Sat, May 23</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sat-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (9AM-12PM)</span>
+                                            <strong>Math AA HL: Intro to Calc & Rules of Differentiation (Ch 17-18)</strong> - High-yield Calculus concepts. Focus on derivatives rules, tangent lines, and normals.
+                                            <span class="calc-tip">💡 fx-CG50: Practice finding derivatives at a point in Run-Matrix using d/dx! (MATH -> d/dx)</span>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item cs">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sat-cs">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2PM-5PM)</span>
+                                            <strong>CS HL P2: OOP Theory</strong> - Construction of methods, constructors, subclasses, Polymorphism.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item span">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sat-span">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6PM-8PM)</span>
+                                            <strong>Spanish B: Ingenio Humano + Correo Electrónico</strong> - Vocabulary and email layout.
+                                            <span class="listen-tip">🎧 Spend the first 20m actively listening to an past paper Spanish audio excerpt!</span>
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- May 24 -->
+                        <div class="glass-panel">
+                            <div class="day-header">Sun, May 24</div>
+                            <ul class="task-list">
+                                <li class="task-item physics">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sun-physics">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (9AM-12PM)</span>
+                                            <strong>Physics HL: Theme A (A4-A5) & Theme B (B4)</strong> - Torque, rotational mechanics, Galilean/special relativity postulates & transformations (A4-A5), and Thermodynamics processes & engine cycles (B4).
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item bus">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sun-bus">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2PM-5PM)</span>
+                                            <strong>Business SL: Unit 2 (SL Only)</strong> - HR Management. Review organizational structures, leadership, and motivation, excluding HL extensions.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item eng">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sun-eng">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6PM-8PM)</span>
+                                            <strong>English: Kite Runner Themes & P1 Infographics</strong> - Comparative outlines and analysis techniques.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- May 25 -->
+                        <div class="glass-panel">
+                            <div class="day-header">Mon, May 25</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-mon-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (9AM-12PM)</span>
+                                            <strong>Math AA HL: Properties of Curves (Ch 19) & Apps of Calc (Ch 20B-D)</strong> - Focus heavily on stationary points (Ch 19), rates of change (20B), optimisation (20C), related rates (20D), and curve sketching. (Excluding 20A Kinematics!)
+                                            <span class="calc-tip">💡 fx-CG50: Graph curves in GRAPH mode and use G-Solv (F5) -> MAX / MIN to verify stationary points!</span>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item cs">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-mon-cs">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2PM-5PM)</span>
+                                            <strong>CS HL P2: Python & File Processing (SL)</strong> - Practice loops, list operations, exceptions, Big O notation (B2.4.1), and file-processing operations (B2.5).
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item span">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-mon-span">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6PM-8PM)</span>
+                                            <strong>Spanish B: Compartir el planeta + Ensayo</strong> - Format review and paragraph vocabulary.
+                                            <span class="listen-tip">🎧 Spend the first 20m listening to Spanish B past paper audios.</span>
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- May 26 -->
+                        <div class="glass-panel">
+                            <div class="day-header">Tue, May 26</div>
+                            <ul class="task-list">
+                                <li class="task-item physics">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-tue-physics">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (9AM-12PM)</span>
+                                            <strong>Physics HL: Theme B (Circuits: B5) & Theme C (SHM & Waves: C1-C2)</strong> - Solve electrical circuits & internal resistance (B5), SHM equations (C1), and Wave characteristics (C2).
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item bus">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-tue-bus">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2PM-5PM)</span>
+                                            <strong>Business SL: Unit 3 Finance (SL Only)</strong> - Focus on 3.1-3.5, 3.7, 3.9 definitions and calculations (strictly excluding HL-only Budgeting and Investment Appraisal).
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item eng">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-tue-eng">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6PM-8PM)</span>
+                                            <strong>English: Gatsby vs Kite Runner Comparative Plan</strong> - Contrast central characters and thematic progressions.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- May 27 -->
+                        <div class="glass-panel">
+                            <div class="day-header">Wed, May 27</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-wed-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (9AM-12PM)</span>
+                                            <strong>Math AA HL: Transformations (Ch 5) & Complex Numbers (Ch 6)</strong> - Mapping functions, Cartesian & Polar complex forms, Euler's formula.
+                                            <span class="calc-tip">💡 fx-CG50: Convert complex numbers between Rectangular and Polar forms instantly using OPTN -> CPLX!</span>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item cs">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-wed-cs">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2PM-5PM)</span>
+                                            <strong>CS HL P1: Databases & SQL (SL & HL)</strong> - Normalisation (1NF-3NF), SQL queries, SQL aggregates (A3.3.4), views (A3.3.5), transactions (A3.3.6), and data warehouses, OLAP, and distributed databases (A3.4).
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item span">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-wed-span">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6PM-8PM)</span>
+                                            <strong>Spanish B: Identidades + Diario Format</strong> - Personal journal formatting and expressions.
+                                            <span class="listen-tip">🎧 Spend the first 20m listening to Spanish B past paper audios.</span>
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- May 28 -->
+                        <div class="glass-panel">
+                            <div class="day-header">Thu, May 28</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-thu-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (9AM-11AM)</span>
+                                            <strong>Math AA HL: TIMED Paper 1 Mock (No Calculator)</strong> - Full non-calculator test simulator. Analyze weak points.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item physics">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-thu-physics">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2PM-5PM)</span>
+                                            <strong>Physics HL: TIMED P1 Mock & Review</strong> - Multiple-choice speed run and full mark scheme correction. Focus on Galilean relativity.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item bus">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-thu-bus">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6PM-8PM)</span>
+                                            <strong>Business SL: Full P2 Case Study Practice</strong> - Practice structuring answers using mock case files.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- May 29 -->
+                        <div class="glass-panel">
+                            <div class="day-header">Fri, May 29</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-fri-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (9AM-12PM)</span>
+                                            <strong>Math AA HL: Sequences & Series (Ch 7) & Binomial Expansion</strong> - Arithmetic/Geometric series, sum to infinity, sigma notation, binomial coefficients. (Excluding Ch 8 Permutations & Combinations!)
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item cs">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-fri-cs">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2PM-5PM)</span>
+                                            <strong>CS HL P1: Core Theory, Data Structures & Recursion (HL)</strong> - Review static/dynamic data structures, stack/queue (B2.2), trace sort/search, and master HL Recursion & recursive algorithms (B2.4.4-5).
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item eng">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-fri-eng">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6PM-8PM)</span>
+                                            <strong>English: Final review of quotes & infographic techniques</strong> - Revise key text quotes.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- May 30 -->
+                        <div class="glass-panel">
+                            <div class="day-header">Sat, May 30</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sat2-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (9AM-11AM)</span>
+                                            <strong>Math AA HL: TIMED Paper 2 Mock (Calculator)</strong> - 2-hour full test run. Focus heavily on speed, GDC shortcuts, and structured workings.
+                                            <span class="calc-tip">💡 fx-CG50: Solve large equations instantly using EQUA mode (F4: Solver)!</span>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item physics">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sat2-physics">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2PM-5PM)</span>
+                                            <strong>Physics HL: Timed P2 Mock & Review</strong> - Practice structured problem-solving under timed pressure.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item span">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sat2-span">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6PM-8PM)</span>
+                                            <strong>Spanish B: Experiencias + Final Writing practice</strong> - Outline formats for articles and blogs.
+                                            <span class="listen-tip">🎧 Spend the first 20m listening to Spanish B past paper audios.</span>
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <!-- May 31 -->
+                        <div class="glass-panel">
+                            <div class="day-header">Sun, May 31 <span>Eve of Mocks</span></div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sun2-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (9AM-11:30AM)</span>
+                                            <strong>Math HL: Induction (Ch 9) & Trigonometry (Ch 10-13) Review</strong> - Revisit proof by induction steps and trigonometric functions/equations.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item physics">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sun2-physics">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">11:30 AM - 1:00 PM</span>
+                                            <strong>Physics HL: Formula Review & Mistakes Log</strong> - Flip through mock results and mistakes. Fix weak details.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item cs">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sun2-cs">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2PM-5PM)</span>
+                                            <strong>CS HL P2: Final Trace Tables & OOP Run-through</strong> - Run trace calculations, sort algorithms, and double-check OOP subclasses on paper.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-sun2-rest">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening</span>
+                                            <strong>REST.</strong> Pack your bag. Sleep by 10:30 PM.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    </div> <!-- End of #bf-phase2-container -->
+
+                    <!-- Phase 3 (The Exams) -->
+                    <div id="bf-phase3-container">
+                        <h2 style="margin-top: 2rem;">Phase 3: The Exams (Showtime)</h2>
+                    <div class="glass-panel">
+                        <div class="timeline-day">
+                            <div class="day-header">Mon, June 1</div>
+                            <ul class="task-list">
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-phys1">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">7:50 AM - 9:50 AM</span>
+                                            <strong>EXAM: Physics HL P1</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-phys2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">10:20 AM - 12:50 PM</span>
+                                            <strong>EXAM: Physics HL P2</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item cs">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-cs">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon</span>
+                                            <strong>Study:</strong> Light review for CS P1 tomorrow.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Tue, June 2</div>
+                            <ul class="task-list">
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-tue-cs1">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">12:30 PM - 2:30 PM</span>
+                                            <strong>EXAM: CS HL P1</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item cs">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-tue-cs2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening</span>
+                                            <strong>Study:</strong> Prep for CS P2 and Business P2.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Wed, June 3</div>
+                            <ul class="task-list">
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-wed-cs2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">7:50 AM - 9:50 AM</span>
+                                            <strong>EXAM: CS HL P2</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-wed-bus2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">10:20 AM - 11:50 AM</span>
+                                            <strong>EXAM: Business SL P2</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item span">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-wed-span">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening</span>
+                                            <strong>Study:</strong> Spanish B Prep.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Thu, June 4</div>
+                            <ul class="task-list">
+                                <li class="task-item span">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-thu-span">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">All Day</span>
+                                            <strong>Study:</strong> No exams today. Intensive Spanish P1 reading/listening practice.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Fri, June 5</div>
+                            <ul class="task-list">
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-fri-span1">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">7:50 AM - 9:05 AM</span>
+                                            <strong>EXAM: Spanish B SL P1</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-fri-weekend">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Weekend</span>
+                                            <strong>Study:</strong> Spanish B P2 writing formats & English P1/P2 review.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Mon, June 8</div>
+                            <ul class="task-list">
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-span2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">7:50 AM - 8:50 AM</span>
+                                            <strong>EXAM: Spanish B SL P2</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-eng1">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">10:00 AM - 11:15 AM</span>
+                                            <strong>EXAM: English Lang Lit SL P1</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item eng">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-eng2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon</span>
+                                            <strong>Study:</strong> English P2 prep (Gatsby/Kite Runner themes).
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Tue, June 9</div>
+                            <ul class="task-list">
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-tue-eng2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">7:50 AM - 9:35 AM</span>
+                                            <strong>EXAM: English Lang Lit SL P2</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-tue-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening</span>
+                                            <strong>Study:</strong> Math AA HL P1 Prep (Non-calculator practice).
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Wed, June 10</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-wed-math">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">All Day</span>
+                                            <strong>Study:</strong> No exams today. Full day Math P1 review.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Thu, June 11</div>
+                            <ul class="task-list">
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-thu-math1">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">7:50 AM - 9:50 AM</span>
+                                            <strong>EXAM: Math AA HL P1</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-thu-math2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon</span>
+                                            <strong>Study:</strong> Math AA HL P2 Prep (Calculator techniques).
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Fri, June 12</div>
+                            <ul class="task-list">
+                                <li class="task-item exam">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-fri-math2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">7:50 AM - 9:50 AM</span>
+                                            <strong>EXAM: Math AA HL P2</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-fri-celebrate">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">10:00 AM</span>
+                                            <strong>CELEBRATE 🎉 You survived!</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    </div> <!-- End of #bf-phase3-container -->
+                    </div> <!-- End of #bf-timeline-view -->
+                </div>
+
+                <!-- ==========================================
+                     MAHI BLUEPRINT CONTENT (Dynamic Checklist)
+                     ========================================== -->
+                <div id="blueprint-content-mahi" style="display: none;">
+                    <div id="mahi-strategy-view" class="blueprint-section active">
+                        <div class="grid-2">
+                        <div class="glass-panel tips-section">
+                            <h2>🧠 Strategy & Mindset</h2>
+                            <ul>
+                                <li><strong>The 70-Min Bio Grind:</strong> Bio HL requires massive retention. Grind 70-minute Pomodoro sessions for Topic 1-2 cell/molecular diagrams and Topic 6/11 physiology cycles.</li>
+                                <li><strong>Active Recall & Solutions Debugging:</strong> Don't just read notes. Cover your chemistry/biology notebooks, draw pathways from memory, and verify exact nomenclature in the mark scheme.</li>
+                                <li><strong>Econ Paper 1/2 Evaluation Structure:</strong> Write structured outlines for Micro/Macro choices. Label diagrams fully (Price, Quantity, Supply, Demand, elasticities). Always link axis shifts to evaluation text.</li>
+                                <li><strong>Spanish ab initio Speaking & Reading:</strong> Learn 5 high-value structural verbs per Theme (Identidades, Organización social). Drill reading booklets and note structural formats for Blog, Informal Letter.</li>
+                                <li><strong>English Lang Lit SL Paper 1 & 2 Blueprint:</strong> For P1 infographics, analyze visual hierarchy, font typography, and color appeals. For P2, master 10 quotes each for Gatsby & Kite Runner linking to themes.</li>
+                                <li><strong>Grind Hours:</strong> Shift window runs from 10:00 AM to 7:30 PM. Complete your tasks within this block. Rest fully in the evening with zero guilt!</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="glass-panel tips-section">
+                            <h2>📚 Subject Focus</h2>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag econ">Economics HL</span> Focus on Micro, Macro, and Global economy diagrams & Paper 3 calculations.
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag bio">Biology HL</span> Cell molecular structures (Topic 1-2), human physiology (Topic 6), genetics crosses (Topic 3), and plant biology/animal physiology (Topic 9 & 11).
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag chem">Chemistry HL</span> Topic 1 (Moles), Topic 2 (Atomic Configurations), Topic 4 (Bonding geometries), Topic 6-7 (Kinetics & Equilibrium), Topic 8 (pH scale), and Topic 10 (Organic pathways).
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag span">Spanish ab initio</span> Vocabulary themes (Identidades, Experiencias), Reading Booklets, and text formats (Blog, Informal Letter, Correo).
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <span class="tag eng">English Lang Lit</span> Paper 1 Infographics visual analysis and Paper 2 Gatsby vs Kite Runner comparative theme quotes.
+                            </div>
+                            <div>
+                                <span class="tag math">Math AA SL</span> Function graphs, differentiation rules, probability Venn diagrams, and normal distribution calculator sums.
+                            </div>
+                        </div>
+                    </div>
+                    </div> <!-- End of #mahi-strategy-view -->
+
+                    <div id="mahi-timeline-view" class="blueprint-section">
+                        <!-- Dynamic controls to let Mahi log her targets -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px;">
+                            <h2 style="margin: 0;">📋 Mahi Target Blueprint Timeline</h2>
+                            <button class="btn-primary" style="width: auto; padding: 0.6rem 1.2rem; margin: 0;" onclick="showAddMahiBlueprintForm()">➕ Add Target Task</button>
+                        </div>
+
+                        <!-- Mahi Phase Switcher Pills -->
+                        <div class="phase-switcher-container">
+                            <button class="phase-pill active" id="mahi-pill-all" onclick="switchMahiPhase('All')">All Phases</button>
+                            <button class="phase-pill" id="mahi-pill-leave" onclick="switchMahiPhase('Study Leave')">Study Leave</button>
+                            <button class="phase-pill" id="mahi-pill-exams" onclick="switchMahiPhase('Mock Exams')">Mock Exams</button>
+                        </div>
+
+                    <!-- Task Add/Edit Form Overlay Panel (Glassmorphic design) -->
+                    <div class="glass-panel" id="mahi-blueprint-form-container" style="display: none; margin-bottom: 2rem; border: 1px solid var(--physics-color);">
+                        <h3 id="mahi-form-title-heading" style="margin-top: 0; color: var(--exam-color);">Add New Blueprint Target</h3>
+                        <form id="mahi-blueprint-form">
+                            <input type="hidden" id="mahi-form-task-index" value="-1">
+                            
+                            <div class="grid-2" style="gap: 1rem; margin-bottom: 1rem;">
+                                <div class="form-group">
+                                    <label for="mahi-form-subject">Subject Focus</label>
+                                    <select id="mahi-form-subject" class="form-control">
+                                        <option value="econ">Economics HL</option>
+                                        <option value="bio">Biology HL</option>
+                                        <option value="chem">Chemistry HL</option>
+                                        <option value="eng">English Lang Lit SL</option>
+                                        <option value="span">Spanish ab initio</option>
+                                        <option value="math">Math AA SL</option>
+                                        <option value="exam">⚠️ Exam Day</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mahi-form-phase">Plan Phase</label>
+                                    <select id="mahi-form-phase" class="form-control">
+                                        <option value="Study Leave">Study Leave (May 23 - June 4)</option>
+                                        <option value="Mock Exams">Mock Exams (June 5 - June 12)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid-2" style="gap: 1rem; margin-bottom: 1rem;">
+                                <div class="form-group">
+                                    <label for="mahi-form-date">Day / Date Label</label>
+                                    <input type="text" id="mahi-form-date" class="form-control" placeholder="e.g. Saturday, May 23" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mahi-form-time">Time Slot / Hours</label>
+                                    <input type="text" id="mahi-form-time" class="form-control" placeholder="e.g. Morning (10AM-1PM) or 7:50 AM" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="mahi-form-title">Target Task Title</label>
+                                <input type="text" id="mahi-form-title" class="form-control" placeholder="e.g. Stoichiometry Topic 1 drill" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="mahi-form-desc">Task Description & Deliverables</label>
+                                <textarea id="mahi-form-desc" class="form-control" rows="3" placeholder="e.g. Solve Topic 1 molecular and mass ratio problems. 5 past paper questions." required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="mahi-form-tip">Strategy Tip (Optional)</label>
+                                <input type="text" id="mahi-form-tip" class="form-control" placeholder="e.g. 💡 Don't forget Be is an exclusion in periodicity ionization!">
+                            </div>
+
+                            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                                <button type="button" class="btn-primary" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); box-shadow: none;" onclick="hideMahiBlueprintForm()">Cancel</button>
+                                <button type="submit" class="btn-primary">Save Target</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Dynamic timeline where tasks render -->
+                    <div id="mahi-blueprint-timeline"></div>
+                    </div> <!-- End of #mahi-timeline-view -->
+                </div>
+            </div>
+
+            <!-- 4. Mistakes Log Tab Content -->
+            <div id="tab-mistakes" class="tab-content">
+                <h2 style="margin-top: 0;">📓 Interactive Mistakes & Patterns Log</h2>
+                <div class="glass-panel">
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Every time you hit a past paper question you get wrong or had to debug, log it here. Review this log for 15 minutes every morning to lock in the 7! 🛡️</p>
+                    
+                    <!-- Search & Filters -->
+                    <div class="mistakes-filter-bar">
+                        <div style="flex-grow: 1; min-width: 200px;">
+                            <input type="text" id="search-mistakes" class="form-control" placeholder="🔍 Search mistakes, topics, or corrective rules...">
+                        </div>
+                        <div style="min-width: 200px;">
+                            <select id="filter-mistake-subject" class="form-control">
+                                <!-- Populated dynamically based on BF/GF selection -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mistakes-grid">
+                        <!-- Input Form -->
+                        <div>
+                            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; color: var(--exam-color); margin-bottom: 1rem; margin-top: 0;">Log New Mistake</h3>
+                            <form id="mistake-form">
+                                <div class="form-group">
+                                    <label for="mistake-subject">Subject</label>
+                                    <select id="mistake-subject" class="form-control" required>
+                                        <!-- Populated dynamically -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mistake-topic">Topic / Chapter</label>
+                                    <input type="text" id="mistake-topic" class="form-control" placeholder="e.g., Circular Motion, Ch 19 Curves" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mistake-desc">What was the mistake / gap?</label>
+                                    <textarea id="mistake-desc" class="form-control" rows="3" placeholder="e.g., Forgot to convert km/h to m/s, or forgot that friction opposes motion." required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mistake-action">What is the correct general rule? (Actionable solution)</label>
+                                    <textarea id="mistake-action" class="form-control" rows="3" placeholder="e.g., Always multiply by 5/18, or draw free-body diagram to find net force direction." required></textarea>
+                                </div>
+                                <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">Add to Mistakes Log 📓</button>
+                            </form>
+                        </div>
+                        
+                        <!-- List view -->
+                        <div id="mistakes-list" class="mistakes-list-container">
+                            <!-- Mistakes rendered dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Application Script Files in correct loading order -->
+    <script src="js/firebase-sync.js"></script>
+    <script src="js/timer.js"></script>
+    <script src="js/countdown.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
