@@ -15,6 +15,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 window.db = firebase.firestore();
+window.storage = firebase.storage();
 
 // Enable offline persistence
 window.db.enablePersistence({ synchronizeTabs: true })

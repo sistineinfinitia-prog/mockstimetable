@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IBDP Mocks Study Timetable & Study Portal</title>
     <meta name="description" content="A premium modular Single-Page Application study portal and mock exams preparation planner with Firestore sync, custom Pomodoro timer, dynamic schedules, and mistakes log.">
+    <meta name="version" content="1.0.0">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Stylesheets -->
@@ -14,6 +15,7 @@
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <!-- Inline Theme Initializer (Prevents color flash on page load) -->
     <script>
         (function() {
@@ -1207,6 +1209,18 @@
                                     <label for="mistake-action">What is the correct general rule? (Actionable solution)</label>
                                     <textarea id="mistake-action" class="form-control" rows="3" placeholder="e.g., Always multiply by 5/18, or draw free-body diagram to find net force direction." required></textarea>
                                 </div>
+                                <div class="form-group">
+                                    <label>Reference Image (Optional)</label>
+                                    <div id="mistake-image-zone" class="image-upload-zone">
+                                        <span class="upload-icon">📷</span>
+                                        <span class="upload-text">Drag & drop, paste, or click to upload</span>
+                                        <input type="file" id="mistake-image-input" accept="image/*" style="display: none;">
+                                    </div>
+                                    <div id="mistake-image-preview-container" style="display: none; margin-top: 1rem; position: relative;">
+                                        <img id="mistake-image-preview" src="" style="width: 100%; border-radius: 8px; border: 1px solid var(--card-border); max-height: 150px; object-fit: contain;">
+                                        <button type="button" id="btn-remove-mistake-image" class="remove-img-btn" style="position: absolute; top: -8px; right: -8px; background: var(--math-color); border: none; border-radius: 50%; width: 24px; height: 24px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; line-height: 1;">✕</button>
+                                    </div>
+                                </div>
                                 <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">Add to Mistakes Log 📓</button>
                             </form>
                         </div>
@@ -1219,6 +1233,21 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Floating Update Toast -->
+    <div id="update-toast" class="update-toast">
+        <div class="update-toast-content">
+            <span class="update-toast-icon">🚀</span>
+            <span class="update-toast-text">A new version of the Study Portal is available!</span>
+        </div>
+        <button class="btn-update-refresh" onclick="window.location.reload(true)">Refresh to Update</button>
+    </div>
+
+    <!-- Lightbox Modal for Mistakes Images -->
+    <div id="lightbox-modal" class="lightbox-modal" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <img id="lightbox-image" class="lightbox-content" src="" alt="Enlarged view" onclick="event.stopPropagation()">
     </div>
 
     <!-- Application Script Files in correct loading order -->
