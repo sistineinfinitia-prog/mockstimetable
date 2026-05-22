@@ -372,6 +372,17 @@ function initChatSync() {
         
         if (lastIncoming && (!lastCurrent || lastIncoming.timestamp !== lastCurrent.timestamp)) {
             // A new message has arrived
+            const isSystemUpdate = lastIncoming.sender === 'System' || 
+                (lastIncoming.text && (
+                    lastIncoming.text.toLowerCase().includes('new update') || 
+                    lastIncoming.text.toLowerCase().includes('refresh for new update') || 
+                    lastIncoming.text.toLowerCase().includes('refresh to update')
+                ));
+            
+            if (isSystemUpdate && typeof window.checkForUpdates === 'function') {
+                window.checkForUpdates();
+            }
+
             if (lastIncoming.sender !== window.currentUser) {
                 // If message timestamp is newer than our last read time, trigger notification/badge
                 if (lastIncoming.timestamp > lastReadTimestamp) {

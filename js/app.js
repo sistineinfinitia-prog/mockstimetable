@@ -1115,6 +1115,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Expose globally so components (like chat) can trigger checks
+    window.checkForUpdates = checkForUpdates;
+
     // Run update check on load (with a small delay to prioritize page render)
     setTimeout(checkForUpdates, 3000);
 
