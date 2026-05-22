@@ -1,0 +1,100 @@
+# Core Codebase Blueprint & System Contracts
+
+This file serves as a reference blueprint for AI coding assistants. Read this before modifying the codebase to prevent regressions, maintain design integrity, and understand database structures.
+
+---
+
+## 1. Architectural Philosophy & Technology Stack
+- **Philosophy:** Highly responsive, premium aesthetic (glassmorphism, vibrant soft accents) for joint study revision.
+- **Stack:** Pure Vanilla HTML5, CSS3, and ES6 Javascript.
+- **Framework Constraint:** No TailwindCSS, React, or build systems. Keep files raw and direct.
+- **Cache-Busting Contract:** Every time a new update is released, the version meta tag in `index.html` (e.g. `<meta name="version" content="1.0.3">`) and stylesheet references (`href="css/style.css?v=1.0.3"`) must be bumped to trigger the client-side update detector.
+
+---
+
+## 2. Core File Registry
+- [index.html](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/index.html): Houses layouts, widgets, structural tables, and overlays (Mistakes Image Lightbox, Centered Update Toast Modal, and Study Chat Widget).
+- [css/themes.css](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/css/themes.css): The theme system container. Defines `:root` (Dark Theme) and `[data-theme="light"]` (Light Theme) variables. 
+- [css/style.css](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/css/style.css): Main layout configurations, widget styling (Stopwatch, Pomodoro, Mistakes Log list), animations, and responsive breakpoints.
+- [js/firebase-sync.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/firebase-sync.js): Handles Firestore database initialization, user session synchronization, offline state caching, and the default datasets for BF (Rudolph) and GF (Mahi).
+- [js/chat.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/chat.js): Manages the real-time chat UI, unread badge alerts, audio notifications, and optimistic UI update logic.
+- [js/app.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/app.js): Contains view lifecycle logic, timer coordination, mistake-log form inputs (including drag-and-drop image uploads via Firebase Storage), and version checking.
+
+---
+
+## 3. Database & Sync Schemas (Firestore / Firebase Storage)
+
+### Firestore Collection: `study_data`
+
+#### Document: `chat`
+Stores the recent chat history between users:
+```typescript
+interface ChatSchema {
+  messages: Array<{
+    sender: 'BF' | 'GF';
+    text: string;
+    timestamp: number; // Unix epoch milliseconds
+  }>;
+}
+```
+*Note: The array is limited to the last 200 messages to prevent document size growth.*
+
+#### Document: `timetable`
+Synchronizes the study timetable between sessions:
+```typescript
+interface TimetableSchema {
+  // Keyed by user identifier: BF or GF
+  [userCode: string]: {
+    [day: string]: { // "Mon", "Tue", etc.
+      morning: string;
+      afternoon: string;
+      evening: string;
+    }
+  }
+}
+```
+
+#### Document: `mistakes`
+Contains mistakes logged by the students:
+```typescript
+interface MistakesSchema {
+  mistakes: Array<{
+    id: string; // unique ID
+    sender: 'BF' | 'GF';
+    subject: string; // "math", "physics", "cs", etc.
+    question: string; // Text description
+    error: string; // The mistake made
+    correction: string; // Correct method
+    timestamp: number;
+    imageUrl?: string; // Optional Firebase Storage download URL
+  }>;
+}
+```
+
+---
+
+## 4. UI Style Guide & Coding Contracts
+
+### Theme Consistency
+Never use hardcoded hex values or rgba colors for basic panels/buttons/texts. Always use the theme-aware tokens defined in `themes.css`:
+- Background color: `var(--bg-color)`
+- Card panels: `var(--card-bg)`, `var(--card-border)`
+- Primary text: `var(--text-main)`, secondary text: `var(--text-muted)`
+- Accent colors for subjects: `var(--math-color)`, `var(--physics-color)`, etc.
+
+### Glassmorphism Card Style
+All containers should feel light and transparent:
+```css
+background: var(--card-bg);
+border: 1px solid var(--card-border);
+backdrop-filter: blur(15px);
+-webkit-backdrop-filter: blur(15px);
+```
+
+### Agent Instruction Checklist
+> [!IMPORTANT]
+> **Adaptive Documentation Updates:**
+> Whenever you modify files in this repository, you **MUST** update `.agents/journal.md` with:
+> 1. The timestamp and version code of your update.
+> 2. A concise summary of the changes you made.
+> 3. Any new guidelines or changes to files and DB schemas inside this `blueprint.md` file.
