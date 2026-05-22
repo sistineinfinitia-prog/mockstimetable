@@ -1,5 +1,7 @@
 /* js/firebase-sync.js */
 
+const CURRENT_TASKS_VERSION = 2;
+
 // Initialize Firebase & Firestore
 const firebaseConfig = {
     apiKey: "AIzaSyCL1Mrv3p6eYuhjlnpNOXK9zMCPCvimjDE",
@@ -181,7 +183,8 @@ window.pushStateToFirestore = function() {
         timetable: window.timetable,
         blueprintCheckboxes: window.blueprintCheckboxes,
         mistakes: window.mistakes,
-        blueprintTasks: window.blueprintTasks
+        blueprintTasks: window.blueprintTasks,
+        tasksVersion: CURRENT_TASKS_VERSION
     }, { merge: true }).catch(err => {
         console.error("Firestore write failed (offline sync buffered):", err);
     });
@@ -323,12 +326,17 @@ window.loadUserData = function(user) {
             window.mistakes = data.mistakes || [];
             window.blueprintCheckboxes = data.blueprintCheckboxes || {};
             
+            const remoteVersion = data.tasksVersion || 0;
             let remoteBlueprintTasks = data.blueprintTasks || (user === 'GF' ? window.defaultBlueprintTasksMahi : []);
             let remoteModified = false;
             if (user === 'GF') {
-                const migration = window.migrateMahiBlueprintTasks(remoteBlueprintTasks);
-                remoteBlueprintTasks = migration.tasks;
-                remoteModified = migration.modified;
+                if (remoteVersion > CURRENT_TASKS_VERSION) {
+                    console.log("Remote tasks version (" + remoteVersion + ") is newer than client version (" + CURRENT_TASKS_VERSION + "). Skipping migration to prevent loop.");
+                } else {
+                    const migration = window.migrateMahiBlueprintTasks(remoteBlueprintTasks);
+                    remoteBlueprintTasks = migration.tasks;
+                    remoteModified = migration.modified;
+                }
             }
             window.blueprintTasks = remoteBlueprintTasks;
             
@@ -358,7 +366,12 @@ window.loadUserData = function(user) {
             // If remote data had to be migrated, push the updated state back to Firestore
             if (remoteModified) {
                 console.log("Pushing migrated blueprint tasks to Firestore...");
-                window.pushStateToFirestore();
+                window.db.collection('study_data').doc(docId).update({
+                    blueprintTasks: window.blueprintTasks,
+                    tasksVersion: CURRENT_TASKS_VERSION
+                }).catch(err => {
+                    console.error("Firestore update failed for migrated tasks:", err);
+                });
             }
         }
     }, (error) => {
