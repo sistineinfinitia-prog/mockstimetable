@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IBDP Mocks Study Timetable & Study Portal</title>
     <meta name="description" content="A premium modular Single-Page Application study portal and mock exams preparation planner with Firestore sync, custom Pomodoro timer, dynamic schedules, and mistakes log.">
-    <meta name="version" content="1.0.0">
+    <meta name="version" content="1.0.2">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/themes.css">
-    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/style.css?v=1.0.2">
+    <link rel="stylesheet" href="css/themes.css?v=1.0.2">
+    <link rel="stylesheet" href="css/animations.css?v=1.0.2">
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -58,8 +58,12 @@
     <div class="container">
         <!-- Top Right Controls -->
         <div class="top-controls">
-            <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">🌙 Light/Dark Mode</button>
-            <button id="profile-switcher-btn" class="profile-btn" onclick="showUserPortal()">👤 Change Profile</button>
+            <button id="chat-trigger-btn" class="chat-trigger-btn" onclick="toggleChatWindow()" title="Open Study Chat">
+                <span class="chat-trigger-icon">💬</span> <span class="btn-text">Chat</span>
+                <span id="chat-unread-badge" class="chat-unread-badge"></span>
+            </button>
+            <button id="theme-toggle-btn" class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">🌙 <span class="btn-text">Light/Dark Mode</span></button>
+            <button id="profile-switcher-btn" class="profile-btn" onclick="showUserPortal()">👤 <span class="btn-text">Change Profile</span></button>
         </div>
         
         <!-- Header Hero section -->
@@ -1250,14 +1254,8 @@
         <img id="lightbox-image" class="lightbox-content" src="" alt="Enlarged view" onclick="event.stopPropagation()">
     </div>
 
-    <!-- Floating Study Chat Widget -->
+    <!-- Study Chat Widget -->
     <div id="study-chat-widget" class="study-chat-widget">
-        <!-- Floating Chat Trigger Button -->
-        <button id="chat-trigger-btn" class="chat-trigger-btn" onclick="toggleChatWindow()">
-            <span class="chat-trigger-icon">💬</span>
-            <span id="chat-unread-badge" class="chat-unread-badge"></span>
-        </button>
-
         <!-- Chat Panel Window -->
         <div id="chat-panel" class="chat-panel">
             <div class="chat-panel-header">

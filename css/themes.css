@@ -29,6 +29,17 @@
     --econ-color: #ffa502;
     --bio-color: #7bed9f;
     --chem-color: #70a1ff;
+
+    /* Theme-aware Chat styling variables (Dark Mode) */
+    --chat-panel-bg: rgba(20, 20, 32, 0.85);
+    --chat-panel-border: rgba(255, 255, 255, 0.08);
+    --chat-bubble-recv-bg: rgba(255, 255, 255, 0.06);
+    --chat-bubble-recv-border: rgba(255, 255, 255, 0.08);
+    --chat-input-bg: rgba(0, 0, 0, 0.25);
+    --chat-input-border: rgba(255, 255, 255, 0.08);
+    --chat-btn-hover: rgba(255, 255, 255, 0.08);
+    --chat-sent-bf-color: #e0f7ff;
+    --chat-sent-gf-color: #fff0eb;
 }
 
 [data-theme="light"] {
@@ -47,6 +58,17 @@
     --input-color: #1c1c1e;
     --table-header-bg: rgba(0, 0, 0, 0.04);
     --glass-shadow: rgba(0, 0, 0, 0.06);
+
+    /* Theme-aware Chat styling variables (Light Mode) */
+    --chat-panel-bg: rgba(255, 255, 255, 0.85);
+    --chat-panel-border: rgba(0, 0, 0, 0.08);
+    --chat-bubble-recv-bg: rgba(0, 0, 0, 0.04);
+    --chat-bubble-recv-border: rgba(0, 0, 0, 0.06);
+    --chat-input-bg: rgba(255, 255, 255, 0.6);
+    --chat-input-border: rgba(0, 0, 0, 0.1);
+    --chat-btn-hover: rgba(0, 0, 0, 0.06);
+    --chat-sent-bf-color: #0b5394;
+    --chat-sent-gf-color: #a64d79;
 
     /* Rudolph (BF) Default Subjects - high contrast for light mode */
     --math-color: #e84118;

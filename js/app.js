@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('mocks_theme', theme);
         const themeBtn = document.getElementById('theme-toggle-btn');
         if (themeBtn) {
-            themeBtn.innerHTML = theme === 'light' ? '🌙 Light/Dark Mode' : '☀️ Light/Dark Mode';
+            themeBtn.innerHTML = theme === 'light' ? '🌙 <span class="btn-text">Light/Dark Mode</span>' : '☀️ <span class="btn-text">Light/Dark Mode</span>';
             themeBtn.title = theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
         }
     }
