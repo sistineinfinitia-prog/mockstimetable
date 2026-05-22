@@ -15,10 +15,18 @@ This file serves as a reference blueprint for AI coding assistants. Read this be
 ## 2. Core File Registry
 - [index.html](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/index.html): Houses layouts, widgets, structural tables, and overlays (Mistakes Image Lightbox, Centered Update Toast Modal, and Study Chat Widget).
 - [css/themes.css](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/css/themes.css): The theme system container. Defines `:root` (Dark Theme) and `[data-theme="light"]` (Light Theme) variables. 
-- [css/style.css](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/css/style.css): Main layout configurations, widget styling (Stopwatch, Pomodoro, Mistakes Log list), animations, and responsive breakpoints.
+- [css/style.css](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/css/style.css): Core container grids, layout boxes, responsive page wrappers, header settings, and default button themes.
+- [css/components/](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/css/components/):
+  - [chat.css](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/css/components/chat.css): CSS styles for the study chat widget, bubble UI, input area, and notification toast.
+  - [timers.css](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/css/components/timers.css): CSS styles for clock-in/out, stopwatch, and Pomodoro timer dashboard card.
+  - [mistakes.css](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/css/components/mistakes.css): CSS styles for the mistakes log form, drag-and-drop file upload, list cards, filters, and lightbox.
 - [js/firebase-sync.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/firebase-sync.js): Handles Firestore database initialization, user session synchronization, offline state caching, and the default datasets for BF (Rudolph) and GF (Mahi).
-- [js/chat.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/chat.js): Manages the real-time chat UI, unread badge alerts, audio notifications, and optimistic UI update logic.
-- [js/app.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/app.js): Contains view lifecycle logic, timer coordination, mistake-log form inputs (including drag-and-drop image uploads via Firebase Storage), and version checking.
+- [js/components/](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/components/):
+  - [chat.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/components/chat.js): Manages the real-time chat UI, unread badge alerts, audio notifications, and optimistic UI updates.
+  - [timers.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/components/timers.js): Merged module for the live clock updater, active session stopwatch, and Pomodoro timer event listeners and logic.
+  - [countdown.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/components/countdown.js): Countdown timer calculations and display updates.
+  - [mistakes-log.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/components/mistakes-log.js): Handles mistakes logs rendering, past-paper filters, image upload compression, drag-and-drop / paste image attachment, and the lightbox zoom view.
+- [js/app.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/app.js): Handles application routing, tab navigation, global updates checker, active shift session trackers, and general window hooks.
 
 ---
 
@@ -98,3 +106,4 @@ backdrop-filter: blur(15px);
 > 1. The timestamp and version code of your update.
 > 2. A concise summary of the changes you made.
 > 3. Any new guidelines or changes to files and DB schemas inside this `blueprint.md` file.
+> 4. **GitHub Version Control & Sync Contract:** Every update, release, or bugfix must be committed and pushed to GitHub immediately to ensure synchronization across team members.
