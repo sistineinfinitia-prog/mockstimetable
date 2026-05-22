@@ -178,6 +178,11 @@ window.handleChatSubmit = async function(event) {
     // Clear input immediately for snappy experience
     input.value = ''; 
     
+    // Update user activity immediately upon sending chat
+    if (typeof window.updateUserActivity === 'function') {
+        window.updateUserActivity();
+    }
+    
     // Construct pending message object
     const pendingMsg = {
         id: 'msg-' + Math.random().toString(36).substr(2, 9),
@@ -295,11 +300,13 @@ function updatePartnerStatusUI() {
     if (!statusDot || !partnerNameText) return;
     
     const stats = window.competitionStats ? window.competitionStats[partner] : null;
-    const isOnline = stats ? stats.active : false;
+    
+    // Partner is online if they have an active study session OR their lastActive heartbeat is within the last 2 minutes (120,000 ms)
+    const isOnline = stats ? (stats.active || (Date.now() - stats.lastActive < 120000)) : false;
     
     if (isOnline) {
         statusDot.classList.add('active');
-        const subjectLabel = stats.subject ? ` (studying ${stats.subject} ⚡)` : ' (online)';
+        const subjectLabel = stats.active && stats.subject ? ` (studying ${stats.subject} ⚡)` : ' (online)';
         partnerNameText.textContent = getPartnerDisplayName(partner) + subjectLabel;
     } else {
         statusDot.classList.remove('active');
@@ -378,6 +385,20 @@ document.addEventListener('DOMContentLoaded', () => {
         initChatSync();
         updatePartnerStatusUI();
     }, 1000);
+
+    // Throttled page interaction tracker (updates lastActive at most once every 2 minutes)
+    let lastActivityUpdateTime = 0;
+    function recordUserInteraction() {
+        const now = Date.now();
+        if (now - lastActivityUpdateTime > 2 * 60 * 1000) {
+            lastActivityUpdateTime = now;
+            if (typeof window.updateUserActivity === 'function') {
+                window.updateUserActivity();
+            }
+        }
+    }
+    document.addEventListener('click', recordUserInteraction);
+    document.addEventListener('keypress', recordUserInteraction);
 });
 
 // Wait for window to load completely (after app.js DOMContentLoaded sets window.triggerUIUpdates)

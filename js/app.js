@@ -1063,6 +1063,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
             checkForUpdates();
+            if (typeof updateLiveTime === 'function') updateLiveTime();
+            if (typeof updateDynamicStatus === 'function') updateDynamicStatus();
+            if (typeof updateAnalytics === 'function') updateAnalytics();
         }
     });
 });

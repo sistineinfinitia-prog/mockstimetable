@@ -185,9 +185,26 @@ window.pushStateToFirestore = function() {
         blueprintCheckboxes: window.blueprintCheckboxes,
         mistakes: window.mistakes,
         blueprintTasks: window.blueprintTasks,
-        tasksVersion: CURRENT_TASKS_VERSION
+        tasksVersion: CURRENT_TASKS_VERSION,
+        lastActive: Date.now()
     }, { merge: true }).catch(err => {
         console.error("Firestore write failed (offline sync buffered):", err);
+    });
+};
+
+// Update user activity timestamp in Firestore (throttled to limit writes)
+window.updateUserActivity = function() {
+    if (window.isUpdatingFromFirestore) return;
+    const docId = (window.currentUser === 'GF') ? 'gf_dashboard' : 'dashboard';
+    window.db.collection('study_data').doc(docId).update({
+        lastActive: Date.now()
+    }).catch(err => {
+        // Fallback: if document doesn't exist, we can use set with merge
+        window.db.collection('study_data').doc(docId).set({
+            lastActive: Date.now()
+        }, { merge: true }).catch(e => {
+            console.warn("Failed to set user activity:", e);
+        });
     });
 };
 
@@ -305,6 +322,10 @@ window.loadUserData = function(user) {
     window.mistakes = localMistakes;
     window.blueprintTasks = localBlueprintTasks;
 
+    if (typeof window.updateUserActivity === 'function') {
+        window.updateUserActivity();
+    }
+
     if (typeof window.triggerUIUpdates === 'function') {
         window.triggerUIUpdates();
     }
@@ -414,7 +435,8 @@ window.db.collection('study_data').onSnapshot((querySnapshot) => {
             today: todayMins / 60,
             total: totalMins / 60,
             active: !!data.activeSession,
-            subject: data.activeSession ? data.activeSession.subject : ''
+            subject: data.activeSession ? data.activeSession.subject : '',
+            lastActive: data.lastActive || 0
         };
     });
     
@@ -424,4 +446,18 @@ window.db.collection('study_data').onSnapshot((querySnapshot) => {
     }
 }, (error) => {
     console.error("Collection snapshot error for comparison:", error);
+});
+
+// Periodic activity heartbeat (every 2 minutes, only if tab is visible)
+setInterval(() => {
+    if (document.visibilityState === 'visible' && typeof window.updateUserActivity === 'function') {
+        window.updateUserActivity();
+    }
+}, 2 * 60 * 1000);
+
+// Instantly update activity when tab becomes visible
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && typeof window.updateUserActivity === 'function') {
+        window.updateUserActivity();
+    }
 });

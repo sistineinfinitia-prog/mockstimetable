@@ -117,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Pomodoro Timer Logic
     let pomoTimeRemaining = 3000; // default 50 mins (50 * 60 = 3000 seconds)
+    let pomoTargetEndTime = null; // target timestamp when timer finishes
     let pomoTimerInterval = null;
     let pomoIsRunning = false;
 
@@ -172,20 +173,29 @@ document.addEventListener('DOMContentLoaded', () => {
         pomoStartBtn.innerText = 'Pause';
         pomoStartBtn.className = 'pomo-btn pause';
         
-        pomoTimerInterval = setInterval(() => {
-            if (pomoTimeRemaining > 0) {
-                pomoTimeRemaining--;
+        pomoTargetEndTime = Date.now() + pomoTimeRemaining * 1000;
+        
+        function tick() {
+            const now = Date.now();
+            if (now < pomoTargetEndTime) {
+                pomoTimeRemaining = Math.max(0, Math.ceil((pomoTargetEndTime - now) / 1000));
                 updatePomoDisplay();
             } else {
+                pomoTimeRemaining = 0;
+                updatePomoDisplay();
                 clearInterval(pomoTimerInterval);
                 pomoTimerInterval = null;
+                pomoTargetEndTime = null;
                 pomoIsRunning = false;
                 pomoStartBtn.innerText = 'Start';
                 pomoStartBtn.className = 'pomo-btn start';
                 playPomoAlarm();
                 alert("⏰ Shift segment complete! Time for a rest block.");
             }
-        }, 1000);
+        }
+        
+        pomoTimerInterval = setInterval(tick, 200);
+        tick();
     }
 
     function pausePomoTimer() {
@@ -196,6 +206,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pomoTimerInterval) {
             clearInterval(pomoTimerInterval);
             pomoTimerInterval = null;
+        }
+        if (pomoTargetEndTime) {
+            const now = Date.now();
+            pomoTimeRemaining = Math.max(0, Math.ceil((pomoTargetEndTime - now) / 1000));
+            pomoTargetEndTime = null;
         }
     }
 
@@ -256,6 +271,30 @@ document.addEventListener('DOMContentLoaded', () => {
         pomoTimeRemaining = seconds;
         updatePomoDisplay();
     };
+
+    // Update all timers immediately when tab visibility changes (resolves background tab lag)
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            // Update Pomodoro display if running
+            if (pomoIsRunning && pomoTargetEndTime) {
+                const now = Date.now();
+                if (now < pomoTargetEndTime) {
+                    pomoTimeRemaining = Math.max(0, Math.ceil((pomoTargetEndTime - now) / 1000));
+                } else {
+                    pomoTimeRemaining = 0;
+                }
+                updatePomoDisplay();
+            }
+            // Update active session duration ticker immediately
+            if (window.activeSession && typeof startActiveSessionTicker === 'function') {
+                startActiveSessionTicker();
+            }
+            // Update countdown timer immediately
+            if (typeof window.updateCountdown === 'function') {
+                window.updateCountdown();
+            }
+        }
+    });
 
     updatePomoDisplay();
 });
