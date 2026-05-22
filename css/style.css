@@ -1381,63 +1381,86 @@ select.form-control option {
 
 .update-toast {
     position: fixed;
-    bottom: -100px; /* Hidden initially */
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(20, 20, 35, 0.85);
-    border: 1px solid rgba(0, 210, 255, 0.3);
-    border-radius: 50px;
-    padding: 0.8rem 1.5rem;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 210, 255, 0.15);
-    z-index: 9999;
-    transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    max-width: 90%;
-    width: max-content;
-    box-sizing: border-box;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
 }
 
 .update-toast.show {
-    bottom: 30px;
+    opacity: 1;
+    visibility: visible;
+}
+
+.update-toast-card {
+    background: var(--toast-bg);
+    border: 1px solid var(--toast-border);
+    border-radius: 24px;
+    padding: 2.5rem 2.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.8rem;
+    box-shadow: 0 20px 50px var(--toast-shadow);
+    max-width: 90%;
+    width: 360px;
+    box-sizing: border-box;
+    text-align: center;
+    transform: scale(0.85);
+    transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.update-toast.show .update-toast-card {
+    transform: scale(1);
 }
 
 .update-toast-content {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 0.8rem;
-    color: var(--text-main);
-    font-size: 0.95rem;
-    font-weight: 500;
+    gap: 1rem;
+    color: var(--toast-text);
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.5;
 }
 
 .update-toast-icon {
-    font-size: 1.2rem;
+    font-size: 3rem;
     animation: update-toast-bounce 2s infinite;
 }
 
 .btn-update-refresh {
-    background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    background: var(--toast-btn-bg);
     border: none;
     border-radius: 25px;
     color: #fff;
-    padding: 0.5rem 1.2rem;
-    font-size: 0.85rem;
+    padding: 0.85rem 1.8rem;
+    font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
     font-family: 'Outfit', sans-serif;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 210, 255, 0.2);
-    white-space: nowrap;
+    box-shadow: 0 4px 15px var(--toast-btn-shadow);
+    width: 100%;
 }
 
 .btn-update-refresh:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 15px rgba(0, 210, 255, 0.4);
+    background: var(--toast-btn-hover-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px var(--toast-btn-shadow);
 }
+
 
 .remove-img-btn:hover {
     transform: scale(1.15);
@@ -1479,10 +1502,10 @@ select.form-control option {
 }
 
 .chat-trigger-btn:hover {
-    background: rgba(255, 255, 255, 0.18);
+    background: var(--chat-btn-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 210, 255, 0.2);
-    border-color: rgba(0, 210, 255, 0.3);
+    box-shadow: 0 4px 15px var(--glass-shadow), 0 0 8px rgba(0, 210, 255, 0.15);
+    border-color: rgba(0, 210, 255, 0.25);
 }
 
 .chat-trigger-icon {

@@ -40,6 +40,15 @@
     --chat-btn-hover: rgba(255, 255, 255, 0.08);
     --chat-sent-bf-color: #e0f7ff;
     --chat-sent-gf-color: #fff0eb;
+
+    /* Update Toast variables (Dark Theme) */
+    --toast-bg: rgba(20, 20, 32, 0.95);
+    --toast-border: rgba(255, 255, 255, 0.08);
+    --toast-shadow: rgba(0, 0, 0, 0.6);
+    --toast-text: #f1f1f4;
+    --toast-btn-bg: linear-gradient(135deg, #00d2ff, #3a7bd5);
+    --toast-btn-hover-bg: linear-gradient(135deg, #00e5ff, #4a8be5);
+    --toast-btn-shadow: rgba(0, 210, 255, 0.35);
 }
 
 [data-theme="light"] {
@@ -69,6 +78,15 @@
     --chat-btn-hover: rgba(0, 0, 0, 0.06);
     --chat-sent-bf-color: #0b5394;
     --chat-sent-gf-color: #a64d79;
+
+    /* Update Toast variables (Light Theme) */
+    --toast-bg: rgba(255, 255, 255, 0.96);
+    --toast-border: rgba(0, 0, 0, 0.08);
+    --toast-shadow: rgba(0, 0, 0, 0.15);
+    --toast-text: #1c1c1e;
+    --toast-btn-bg: linear-gradient(135deg, #0984e3, #70a1ff);
+    --toast-btn-hover-bg: linear-gradient(135deg, #0a8df2, #85b0ff);
+    --toast-btn-shadow: rgba(9, 132, 227, 0.25);
 
     /* Rudolph (BF) Default Subjects - high contrast for light mode */
     --math-color: #e84118;

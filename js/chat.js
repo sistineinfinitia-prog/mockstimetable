@@ -4,6 +4,7 @@
 let isChatOpen = false;
 let isSoundEnabled = localStorage.getItem('mocks_chat_sound_enabled') !== 'false'; // default to true
 let chatMessages = [];
+let pendingMessages = [];
 let lastReadTimestamp = parseInt(localStorage.getItem('mocks_chat_last_read_time')) || 0;
 let notifTimeout = null;
 
@@ -122,7 +123,9 @@ function renderChatHistory() {
     const box = document.getElementById('chat-messages-box');
     if (!box) return;
     
-    if (!chatMessages || chatMessages.length === 0) {
+    const allMessages = [...(chatMessages || []), ...pendingMessages];
+    
+    if (allMessages.length === 0) {
         box.innerHTML = `
             <div style="color: var(--text-muted); text-align: center; font-size: 0.85rem; padding: 2rem 1rem; font-style: italic;">
                 No messages yet. Send a note to start coordinating! 📚
@@ -131,17 +134,20 @@ function renderChatHistory() {
         return;
     }
     
-    box.innerHTML = chatMessages.map(msg => {
+    box.innerHTML = allMessages.map(msg => {
         const isSent = msg.sender === window.currentUser;
         const alignClass = isSent ? 'sent' : 'received';
         const userThemeClass = msg.sender; // BF or GF
+        const isPending = msg.isPending;
+        const pendingStyle = isPending ? 'style="opacity: 0.6;"' : '';
+        const pendingStatus = isPending ? ' <span class="pending-indicator">⏳</span>' : '';
         
         return `
-            <div class="chat-message ${alignClass} ${userThemeClass}">
+            <div class="chat-message ${alignClass} ${userThemeClass}" ${pendingStyle}>
                 <div class="chat-bubble">
                     ${escapeChatHtml(msg.text)}
                 </div>
-                <span class="chat-meta">${formatChatTime(msg.timestamp)}</span>
+                <span class="chat-meta">${formatChatTime(msg.timestamp)}${pendingStatus}</span>
             </div>
         `;
     }).join('');
@@ -169,13 +175,20 @@ window.handleChatSubmit = async function(event) {
     const text = input.value.trim();
     if (!text) return;
     
-    input.value = ''; // Clear input immediately for snappy experience
+    // Clear input immediately for snappy experience
+    input.value = ''; 
     
-    const message = {
+    // Construct pending message object
+    const pendingMsg = {
+        id: 'msg-' + Math.random().toString(36).substr(2, 9),
         sender: window.currentUser,
         text: text,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        isPending: true
     };
+    
+    pendingMessages.push(pendingMsg);
+    renderChatHistory();
     
     try {
         const chatDocRef = window.db.collection('study_data').doc('chat');
@@ -189,7 +202,11 @@ window.handleChatSubmit = async function(event) {
                 messages = doc.data().messages || [];
             }
             
-            messages.push(message);
+            messages.push({
+                sender: pendingMsg.sender,
+                text: pendingMsg.text,
+                timestamp: pendingMsg.timestamp
+            });
             
             // Keep only the last 200 messages
             if (messages.length > 200) {
@@ -205,6 +222,13 @@ window.handleChatSubmit = async function(event) {
         
     } catch (err) {
         console.error("Failed to send chat message:", err);
+        // Remove from pending list
+        pendingMessages = pendingMessages.filter(p => p.id !== pendingMsg.id);
+        // Restore input value so user doesn't lose their typed message
+        if (input.value === '') {
+            input.value = text;
+        }
+        renderChatHistory();
         alert("Could not send message. Please try again.");
     }
 };
@@ -296,6 +320,21 @@ function initChatSync() {
         
         const data = doc.data();
         const incomingMessages = data.messages || [];
+        
+        // Reconcile pendingMessages against incomingMessages
+        const now = Date.now();
+        pendingMessages = pendingMessages.filter(pending => {
+            // Prune if pending message has timed out (older than 30 seconds)
+            if (now - pending.timestamp > 30000) return false;
+            
+            // Keep if there is NO matching message in incomingMessages
+            const isMatched = incomingMessages.some(incoming => 
+                incoming.sender === pending.sender &&
+                incoming.text === pending.text &&
+                Math.abs(incoming.timestamp - pending.timestamp) < 15000
+            );
+            return !isMatched;
+        });
         
         // Detect if a new message was added by the other user
         const lastIncoming = incomingMessages[incomingMessages.length - 1];
