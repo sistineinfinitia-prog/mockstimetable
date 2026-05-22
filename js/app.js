@@ -342,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.currentUser = user;
         document.getElementById('user-portal').classList.add('fade-out');
         localStorage.setItem('mocks_study_plan_current_user', user);
+        document.documentElement.setAttribute('data-user', user);
         
         // Restore active sub-tabs preference
         const activeTimesheetTab = localStorage.getItem(user + '_active_timesheet_tab') || 'summary';
@@ -1010,9 +1011,83 @@ document.addEventListener('DOMContentLoaded', () => {
     // 11. Version Update Checker
     const CURRENT_VERSION = document.querySelector('meta[name="version"]')?.getAttribute('content') || '1.0.0';
     let updateToastShown = false;
+    let isCacheLocked = false;
+    let targetVersion = '';
+
+    window.refreshToUpdate = function(version) {
+        const targetVer = version || window.serverVersion || '1.0.0';
+        try {
+            // Save attempt metadata in sessionStorage
+            sessionStorage.setItem('mocks_update_attempt_version', targetVer);
+            sessionStorage.setItem('mocks_update_attempt_time', Date.now().toString());
+            
+            // Build cache-busted redirect URL preserving hash/parameters
+            const url = new URL(window.location.href);
+            url.searchParams.set('u', targetVer);
+            window.location.href = url.toString();
+        } catch (e) {
+            console.error("Refresh redirect failed, falling back to reload:", e);
+            window.location.reload();
+        }
+    };
+    
+    window.hideUpdateToast = function() {
+        const toast = document.getElementById('update-toast');
+        if (toast) {
+            toast.classList.remove('show');
+        }
+    };
+
+    function showUpdateToast(serverVersion, isLocked = false) {
+        const toast = document.getElementById('update-toast');
+        if (toast) {
+            const textEl = toast.querySelector('.update-toast-text');
+            const btnEl = toast.querySelector('.btn-update-refresh');
+            
+            if (isLocked) {
+                if (textEl) textEl.innerHTML = `Update (v${serverVersion}) is available, but your browser is serving cached files. Please force-reload (<kbd>Ctrl+F5</kbd> / <kbd>⌘+Shift+R</kbd>) to apply.`;
+                if (btnEl) {
+                    btnEl.innerText = "Got it";
+                    btnEl.setAttribute('onclick', 'window.hideUpdateToast()');
+                }
+            } else {
+                if (textEl) textEl.innerText = "A new version of the Website is available!";
+                if (btnEl) {
+                    btnEl.innerText = "Refresh to Update";
+                    btnEl.setAttribute('onclick', `window.refreshToUpdate('${serverVersion}')`);
+                }
+            }
+            toast.classList.add('show');
+            updateToastShown = true;
+        }
+    }
+
+    // Check for cache lock on initial load
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlVersion = urlParams.get('u');
+        const sessionAttemptVersion = sessionStorage.getItem('mocks_update_attempt_version');
+        const sessionAttemptTime = sessionStorage.getItem('mocks_update_attempt_time');
+        
+        const attemptedRecently = sessionAttemptTime && (Date.now() - parseInt(sessionAttemptTime, 10) < 60000);
+        const expectedVersion = urlVersion || (attemptedRecently ? sessionAttemptVersion : null);
+
+        if (expectedVersion && expectedVersion !== CURRENT_VERSION) {
+            isCacheLocked = true;
+            targetVersion = expectedVersion;
+            window.serverVersion = targetVersion;
+            
+            // Show cache-lock toast with a brief delay
+            setTimeout(() => {
+                showUpdateToast(targetVersion, true);
+            }, 1500);
+        }
+    } catch (e) {
+        console.warn("Failed checking update query param:", e);
+    }
 
     async function checkForUpdates() {
-        if (updateToastShown) return;
+        if (updateToastShown || isCacheLocked) return;
         
         // Skip check if running on local file protocol to avoid CORS errors
         if (window.location.protocol === 'file:') {
@@ -1026,30 +1101,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const htmlText = await response.text();
             
-            // Extract version from meta tag, supporting either name="version" content="..." or content="..." name="version"
-            let serverVersion = null;
-            const match1 = htmlText.match(/<meta\s+name=["']version["']\s+content=["']([^"']+)["']/i);
-            const match2 = htmlText.match(/<meta\s+content=["']([^"']+)["']\s+name=["']version["']/i);
-            
-            if (match1) {
-                serverVersion = match1[1];
-            } else if (match2) {
-                serverVersion = match2[1];
-            }
+            // Extract version from meta tag using DOMParser (highly robust)
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            const serverVersion = doc.querySelector('meta[name="version"]')?.getAttribute('content');
             
             if (serverVersion && serverVersion !== CURRENT_VERSION) {
-                showUpdateToast();
+                window.serverVersion = serverVersion;
+                // If this is a version we recently attempted to update to, mark as cache-locked
+                const sessionAttemptVersion = sessionStorage.getItem('mocks_update_attempt_version');
+                const sessionAttemptTime = sessionStorage.getItem('mocks_update_attempt_time');
+                const attemptedRecently = sessionAttemptTime && (Date.now() - parseInt(sessionAttemptTime, 10) < 60000);
+
+                if (serverVersion === sessionAttemptVersion && attemptedRecently) {
+                    isCacheLocked = true;
+                    targetVersion = serverVersion;
+                    showUpdateToast(serverVersion, true);
+                } else {
+                    showUpdateToast(serverVersion, false);
+                }
             }
         } catch (err) {
             console.warn("Update check failed:", err);
-        }
-    }
-
-    function showUpdateToast() {
-        const toast = document.getElementById('update-toast');
-        if (toast) {
-            toast.classList.add('show');
-            updateToastShown = true;
         }
     }
 

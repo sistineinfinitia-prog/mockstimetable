@@ -31,7 +31,7 @@
     --chem-color: #70a1ff;
 
     /* Theme-aware Chat styling variables (Dark Mode) */
-    --chat-panel-bg: rgba(20, 20, 32, 0.85);
+    --chat-panel-bg: rgba(18, 18, 20, 0.85);
     --chat-panel-border: rgba(255, 255, 255, 0.08);
     --chat-bubble-recv-bg: rgba(255, 255, 255, 0.06);
     --chat-bubble-recv-border: rgba(255, 255, 255, 0.08);
@@ -42,13 +42,19 @@
     --chat-sent-gf-color: #fff0eb;
 
     /* Update Toast variables (Dark Theme) */
-    --toast-bg: rgba(20, 20, 32, 0.95);
+    --toast-bg: rgba(18, 18, 20, 0.95);
     --toast-border: rgba(255, 255, 255, 0.08);
     --toast-shadow: rgba(0, 0, 0, 0.6);
     --toast-text: #f1f1f4;
-    --toast-btn-bg: linear-gradient(135deg, #00d2ff, #3a7bd5);
-    --toast-btn-hover-bg: linear-gradient(135deg, #00e5ff, #4a8be5);
-    --toast-btn-shadow: rgba(0, 210, 255, 0.35);
+    --toast-btn-bg: var(--active-gradient);
+    --toast-btn-hover-bg: var(--active-gradient);
+    --toast-btn-shadow: var(--active-shadow);
+
+    /* Dynamic Theme-Aware Active Accent Variables (Default Rudolph BF) */
+    --active-gradient: linear-gradient(135deg, var(--math-color), var(--physics-color));
+    --active-shadow: rgba(112, 161, 255, 0.35);
+    --active-glow: rgba(112, 161, 255, 0.15);
+    --active-border: rgba(112, 161, 255, 0.45);
 }
 
 [data-theme="light"] {
@@ -69,7 +75,7 @@
     --glass-shadow: rgba(0, 0, 0, 0.06);
 
     /* Theme-aware Chat styling variables (Light Mode) */
-    --chat-panel-bg: rgba(255, 255, 255, 0.85);
+    --chat-panel-bg: rgba(245, 245, 247, 0.85);
     --chat-panel-border: rgba(0, 0, 0, 0.08);
     --chat-bubble-recv-bg: rgba(0, 0, 0, 0.04);
     --chat-bubble-recv-border: rgba(0, 0, 0, 0.06);
@@ -80,13 +86,13 @@
     --chat-sent-gf-color: #a64d79;
 
     /* Update Toast variables (Light Theme) */
-    --toast-bg: rgba(255, 255, 255, 0.96);
+    --toast-bg: rgba(245, 245, 247, 0.96);
     --toast-border: rgba(0, 0, 0, 0.08);
     --toast-shadow: rgba(0, 0, 0, 0.15);
     --toast-text: #1c1c1e;
-    --toast-btn-bg: linear-gradient(135deg, #0984e3, #70a1ff);
-    --toast-btn-hover-bg: linear-gradient(135deg, #0a8df2, #85b0ff);
-    --toast-btn-shadow: rgba(9, 132, 227, 0.25);
+    --toast-btn-bg: var(--active-gradient);
+    --toast-btn-hover-bg: var(--active-gradient);
+    --toast-btn-shadow: var(--active-shadow);
 
     /* Rudolph (BF) Default Subjects - high contrast for light mode */
     --math-color: #e84118;
@@ -100,6 +106,12 @@
     --econ-color: #d97706;
     --bio-color: #20bf6b;
     --chem-color: #0984e3;
+
+    /* Dynamic Theme-Aware Active Accent Variables (Default Rudolph BF) */
+    --active-gradient: linear-gradient(135deg, var(--math-color), var(--physics-color));
+    --active-shadow: rgba(9, 132, 227, 0.25);
+    --active-glow: rgba(9, 132, 227, 0.15);
+    --active-border: rgba(9, 132, 227, 0.45);
 }
 
 /* Subject Tag Colors */
@@ -159,3 +171,11 @@
 .shifts-log-subject.econ { color: var(--econ-color); }
 .shifts-log-subject.bio { color: var(--bio-color); }
 .shifts-log-subject.chem { color: var(--chem-color); }
+
+/* Mahi (GF) Specific Active Gradients and Accent Overrides */
+[data-user="GF"] {
+    --active-gradient: linear-gradient(135deg, var(--econ-color), var(--bio-color));
+    --active-shadow: rgba(123, 237, 159, 0.3);
+    --active-glow: rgba(123, 237, 159, 0.15);
+    --active-border: rgba(123, 237, 159, 0.45);
+}

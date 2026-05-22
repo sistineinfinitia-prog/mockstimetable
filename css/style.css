@@ -337,10 +337,10 @@ h1, h2, h3 {
 }
 
 .tab-btn.active {
-    background: linear-gradient(135deg, var(--math-color), var(--physics-color));
+    background: var(--active-gradient);
     color: #fff;
     border-color: transparent;
-    box-shadow: 0 0 20px var(--glass-shadow);
+    box-shadow: 0 0 20px var(--active-shadow);
 }
 
 .tab-content {
@@ -829,9 +829,9 @@ h1, h2, h3 {
     color: var(--text-main);
 }
 .console-tab-btn.active {
-    background: linear-gradient(135deg, var(--math-color), var(--physics-color));
+    background: var(--active-gradient);
     color: #fff;
-    box-shadow: 0 4px 12px var(--glass-shadow);
+    box-shadow: 0 4px 12px var(--active-shadow);
 }
 .console-tab-content {
     display: none;
@@ -876,9 +876,9 @@ h1, h2, h3 {
 
 .blueprint-tab-btn.active,
 .timesheet-tab-btn.active {
-    background: linear-gradient(135deg, var(--math-color), var(--physics-color));
+    background: var(--active-gradient);
     color: #fff;
-    box-shadow: 0 4px 12px var(--glass-shadow);
+    box-shadow: 0 4px 12px var(--active-shadow);
 }
 
 .timesheet-tab-content {
@@ -1018,6 +1018,7 @@ h1, h2, h3 {
     background: var(--toast-btn-hover-bg);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px var(--toast-btn-shadow);
+    filter: brightness(1.1);
 }
 
 
