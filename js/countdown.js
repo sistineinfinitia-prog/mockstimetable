@@ -4,11 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const examDates = {
         'BF': {
             label: "⏰ Countdown to First Exam (Physics HL)",
-            date: new Date('June 1, 2026 07:50:00').getTime()
+            date: new Date('2026-06-01T07:50:00').getTime()
         },
         'GF': {
             label: "⏰ Countdown to First Exam (Spanish ab initio)",
-            date: new Date('June 5, 2026 07:50:00').getTime()
+            date: new Date('2026-06-05T07:50:00').getTime()
         }
     };
 
@@ -21,8 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date().getTime();
         const distance = profileExam.date - now;
         
-        const titleEl = document.getElementById('countdown-title');
-        const timerEl = document.getElementById('countdown-timer');
+        const titleEl = document.getElementById('countdown-banner-title');
+        const timerEl = document.getElementById('countdown-timer-container');
+
+        if (!titleEl || !timerEl) {
+            console.error("Countdown DOM elements not found!");
+            return;
+        }
 
         if (distance < 0) {
             titleEl.innerHTML = "🏁 THE MOCK EXAMS HAVE BEGUN! 🏁";
@@ -38,13 +43,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
         
-        document.getElementById('days').innerText = String(days).padStart(2, '0');
-        document.getElementById('hours').innerText = String(hours).padStart(2, '0');
-        document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
-        document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
+        const daysEl = document.getElementById('days-val');
+        const hoursEl = document.getElementById('hours-val');
+        const minsEl = document.getElementById('mins-val');
+        const secsEl = document.getElementById('secs-val');
+
+        if (daysEl) daysEl.innerText = String(days).padStart(2, '0');
+        if (hoursEl) hoursEl.innerText = String(hours).padStart(2, '0');
+        if (minsEl) minsEl.innerText = String(minutes).padStart(2, '0');
+        if (secsEl) secsEl.innerText = String(seconds).padStart(2, '0');
     };
 
     // Run countdown update loop
     countdownInterval = setInterval(window.updateCountdown, 1000);
     window.updateCountdown();
 });
+
