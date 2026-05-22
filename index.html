@@ -1250,10 +1250,51 @@
         <img id="lightbox-image" class="lightbox-content" src="" alt="Enlarged view" onclick="event.stopPropagation()">
     </div>
 
+    <!-- Floating Study Chat Widget -->
+    <div id="study-chat-widget" class="study-chat-widget">
+        <!-- Floating Chat Trigger Button -->
+        <button id="chat-trigger-btn" class="chat-trigger-btn" onclick="toggleChatWindow()">
+            <span class="chat-trigger-icon">💬</span>
+            <span id="chat-unread-badge" class="chat-unread-badge"></span>
+        </button>
+
+        <!-- Chat Panel Window -->
+        <div id="chat-panel" class="chat-panel">
+            <div class="chat-panel-header">
+                <div class="chat-partner-info">
+                    <span class="chat-partner-status" id="chat-partner-status-dot"></span>
+                    <span class="chat-partner-name" id="chat-partner-name-text">Study Chat</span>
+                </div>
+                <div class="chat-header-actions">
+                    <button id="chat-sound-toggle" class="chat-header-btn" onclick="toggleChatSound()" title="Toggle Sound">🔊</button>
+                    <button class="chat-header-btn" onclick="toggleChatWindow()" title="Close Chat">&times;</button>
+                </div>
+            </div>
+            <div id="chat-messages-box" class="chat-messages-box">
+                <!-- Messages rendered dynamically -->
+            </div>
+            <form id="chat-input-form" class="chat-input-form" onsubmit="handleChatSubmit(event)">
+                <input type="text" id="chat-message-input" class="chat-message-input" placeholder="Type a message..." autocomplete="off">
+                <button type="submit" id="btn-send-chat" class="btn-send-chat">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Floating Chat Notification Toast -->
+    <div id="chat-notification-toast" class="chat-notification-toast" onclick="openChatFromNotification()">
+        <div class="chat-notif-avatar" id="chat-notif-avatar">👩‍💻</div>
+        <div class="chat-notif-body">
+            <div class="chat-notif-sender" id="chat-notif-sender">Mahi</div>
+            <div class="chat-notif-message" id="chat-notif-message">Ready to study?</div>
+        </div>
+        <button class="chat-notif-close" onclick="closeChatNotification(event)">&times;</button>
+    </div>
+
     <!-- Application Script Files in correct loading order -->
     <script src="js/firebase-sync.js"></script>
     <script src="js/timer.js"></script>
     <script src="js/countdown.js"></script>
+    <script src="js/chat.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
