@@ -324,9 +324,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.toggleTheme = function() {
+        document.documentElement.classList.add('theme-transition');
         const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
         const newTheme = currentTheme === 'light' ? 'dark' : 'light';
         applyTheme(newTheme);
+        setTimeout(() => {
+            document.documentElement.classList.remove('theme-transition');
+        }, 800);
     };
 
     // Initialize Theme
@@ -441,24 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // 5. Shift Clocking panel
-    const liveTimeEl = document.getElementById('live-time');
-    const liveDateEl = document.getElementById('live-date');
-
-    function updateLiveTime() {
-        const now = new Date();
-        liveTimeEl.innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-        liveDateEl.innerText = now.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    }
-    setInterval(updateLiveTime, 1000);
-    updateLiveTime();
-
-    const btnClock = document.getElementById('btn-clock');
-    const clockStatus = document.getElementById('clock-status');
-    const clockStatusText = document.getElementById('clock-status-text');
-    const clockPulse = document.getElementById('clock-pulse');
-    const activeSessionInfo = document.getElementById('active-session-info');
-    const sessionDurationVal = document.getElementById('session-duration');
-    const shiftSubjectSelect = document.getElementById('shift-subject');
     const statTodayEl = document.getElementById('stat-today');
     const statTotalEl = document.getElementById('stat-total');
     const shiftsLogList = document.getElementById('shifts-log-list');
@@ -1000,6 +986,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (typeof window.renderCompetitionWidget === 'function') {
             window.renderCompetitionWidget();
+        }
+        if (typeof window.updateCountdown === 'function') {
+            window.updateCountdown();
         }
     };
 

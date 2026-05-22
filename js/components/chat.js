@@ -9,38 +9,54 @@ let lastReadTimestamp = parseInt(localStorage.getItem('mocks_chat_last_read_time
 let notifTimeout = null;
 
 // Audio Chime Synthesizer using Web Audio API
+let globalAudioCtx = null;
+
+// Initialize or resume audio context on first user interaction
+function initAudioContext() {
+    if (!globalAudioCtx) {
+        globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+        globalAudioCtx.resume().catch(err => console.warn("Failed to resume AudioContext:", err));
+    }
+}
+// Listen to common interaction events to unlock audio
+document.addEventListener('click', initAudioContext, { once: false, passive: true });
+document.addEventListener('touchstart', initAudioContext, { once: false, passive: true });
+document.addEventListener('keydown', initAudioContext, { once: false, passive: true });
+
 function playChatChime() {
     if (!isSoundEnabled) return;
     try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') {
-            // Browsers block audio until user interaction
+        initAudioContext();
+        if (!globalAudioCtx || globalAudioCtx.state === 'suspended') {
+            console.warn("Web Audio chime blocked; waiting for user gesture.");
             return;
         }
         
-        const time = audioCtx.currentTime;
+        const time = globalAudioCtx.currentTime;
         
         // Note 1: E5 (659.25 Hz) - bright and clean
-        const osc1 = audioCtx.createOscillator();
-        const gain1 = audioCtx.createGain();
+        const osc1 = globalAudioCtx.createOscillator();
+        const gain1 = globalAudioCtx.createGain();
         osc1.type = 'sine';
         osc1.frequency.setValueAtTime(659.25, time);
         gain1.gain.setValueAtTime(0.08, time);
         gain1.gain.exponentialRampToValueAtTime(0.001, time + 0.4);
         osc1.connect(gain1);
-        gain1.connect(audioCtx.destination);
+        gain1.connect(globalAudioCtx.destination);
         osc1.start(time);
         osc1.stop(time + 0.4);
         
         // Note 2: B5 (987.77 Hz) - bright fourth/fifth interval chime
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
+        const osc2 = globalAudioCtx.createOscillator();
+        const gain2 = globalAudioCtx.createGain();
         osc2.type = 'sine';
         osc2.frequency.setValueAtTime(987.77, time + 0.12);
         gain2.gain.setValueAtTime(0.08, time + 0.12);
         gain2.gain.exponentialRampToValueAtTime(0.001, time + 0.7);
         osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
+        gain2.connect(globalAudioCtx.destination);
         osc2.start(time + 0.12);
         osc2.stop(time + 0.7);
     } catch (err) {
@@ -208,6 +224,7 @@ window.handleChatSubmit = async function(event) {
             }
             
             messages.push({
+                id: pendingMsg.id,
                 sender: pendingMsg.sender,
                 text: pendingMsg.text,
                 timestamp: pendingMsg.timestamp
@@ -336,9 +353,12 @@ function initChatSync() {
             
             // Keep if there is NO matching message in incomingMessages
             const isMatched = incomingMessages.some(incoming => 
-                incoming.sender === pending.sender &&
-                incoming.text === pending.text &&
-                Math.abs(incoming.timestamp - pending.timestamp) < 15000
+                incoming.id === pending.id || (
+                    !incoming.id && // Backward-compatible fallback for old messages
+                    incoming.sender === pending.sender &&
+                    incoming.text === pending.text &&
+                    Math.abs(incoming.timestamp - pending.timestamp) < 15000
+                )
             );
             return !isMatched;
         });

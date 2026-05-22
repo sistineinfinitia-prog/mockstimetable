@@ -61,9 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Clipboard Paste Listener (Pasted screenshots)
         document.addEventListener('paste', async (e) => {
-            // Only process paste if mistakes tab is active and form is visible
+            // Only process paste if mistakes tab is active
             const mistakesTab = document.getElementById('tab-mistakes');
-            if (!mistakesTab || mistakesTab.style.display === 'none' && !mistakesTab.classList.contains('active')) {
+            if (!mistakesTab || !mistakesTab.classList.contains('active')) {
                 return;
             }
             

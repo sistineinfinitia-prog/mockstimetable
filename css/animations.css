@@ -1,21 +1,21 @@
 /* css/animations.css */
 
-/* Global Transition Settings - Smooth 4.5s theme transition to prevent flashing */
+/* Global Transition Settings - Snappy and responsive by default (0.25s) */
 body {
-    transition: background-color 4.5s ease, color 4.5s ease;
+    transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* Ensure all text nodes transition their colors slowly to prevent eye-strain flashes */
+/* Snappy transitions for text colors */
 h1, h2, h3, h4, p, span, li, label, strong, a, th, td {
-    transition: color 4.5s ease;
+    transition: color 0.25s ease;
 }
 
 .glass-panel {
-    transition: transform 0.3s ease, background-color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease;
+    transition: transform 0.3s ease, background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .tab-btn {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tab-content {
@@ -23,52 +23,52 @@ h1, h2, h3, h4, p, span, li, label, strong, a, th, td {
 }
 
 .task-item {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
 }
 
 .checkmark {
-    transition: background-color 4.5s ease, border-color 4.5s ease, transform 0.2s ease;
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
 }
 
 .task-text {
-    transition: color 4.5s ease;
+    transition: color 0.25s ease;
 }
 
 .form-control {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .btn-primary {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
 }
 
 .delete-mistake-btn {
-    transition: color 4.5s ease, transform 0.2s ease;
+    transition: color 0.25s ease, transform 0.2s ease;
 }
 
 .delete-agenda-btn {
-    transition: color 4.5s ease, transform 0.2s ease;
+    transition: color 0.25s ease, transform 0.2s ease;
 }
 
 .btn-clock {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pomo-mode-btn {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
 }
 
 .pomo-btn {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
 }
 
 .agenda-item {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     animation: slideIn 0.3s ease;
 }
 
 .timetable-cell {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
 }
 
 .timetable-cell-hint {
@@ -77,21 +77,26 @@ h1, h2, h3, h4, p, span, li, label, strong, a, th, td {
 
 .profile-btn,
 .theme-toggle-btn {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.3s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.3s ease;
 }
 
 .user-portal-overlay {
-    transition: background-color 4.5s ease, color 4.5s ease, opacity 0.5s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, opacity 0.5s ease;
 }
 
 .portal-card {
-    transition: background-color 4.5s ease, color 4.5s ease, border-color 4.5s ease, box-shadow 4.5s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .portal-card-icon {
     transition: transform 0.3s ease;
 }
 
+/* Smooth transition when toggleTheme is active to prevent eye-strain flashes */
+html.theme-transition,
+html.theme-transition * {
+    transition: background-color 0.5s ease !important, color 0.5s ease !important, border-color 0.5s ease !important, box-shadow 0.5s ease !important;
+}
 
 /* Keyframes */
 

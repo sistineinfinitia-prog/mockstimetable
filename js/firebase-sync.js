@@ -416,6 +416,8 @@ window.db.collection('study_data').onSnapshot((querySnapshot) => {
     const todayStr = new Date().toDateString();
     
     querySnapshot.forEach((doc) => {
+        if (doc.id !== 'dashboard' && doc.id !== 'gf_dashboard') return;
+        
         const data = doc.data();
         const userKey = (doc.id === 'gf_dashboard') ? 'GF' : 'BF';
         
