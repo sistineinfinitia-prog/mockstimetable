@@ -5,13 +5,36 @@ This journal tracks updates, bug fixes, features, and future roadmap items. Futu
 ---
 
 ## 1. System Status
-- **Current Version:** `1.0.7`
+- **Current Version:** `1.0.8`
 - **Last Sync Check:** May 23, 2026
 - **Firebase Status:** Firestore and Storage configured, persistence enabled for offline coordination.
 
 ---
 
 ## 2. Chronological Log of Changes
+
+### Version 1.0.8 (May 23, 2026) - Competitive Esports Revamp, Mistakes Log Upgrade & Quadruple Backups
+* **Competitive Study Matchup Revamp:**
+  - Designed Esports-VS split-half profile cards for Rudolph (👻) and Mahi (🦋) with neon leadership glows and crown overlays (`👑`) for the daily leader.
+  - Implemented dual high-contrast Tug-of-War matchup progress bars: one for Daily Grind (today's hours) and one for Overall Campaign (total accumulated hours).
+  - Added Opera-style corner stickers, a floating reaction burst toolbar (8 emojis), nudge notifications, and dual-grind synergy pulsing state triggers.
+* **Interactive Mistakes Log Upgrade:**
+  - Separated mistakes into `🔴 Undone Mistakes` and `🟢 Reviewed Mistakes` tabs.
+  - Compressed log list elements to summary-only rows containing Subject Tag + Topic/Chapter.
+  - Created a detailed mistake popup modal with a click-to-reveal rule overlay covering the actionable solution.
+* **Central Web Audio Synthesizer:**
+  - Integrated latency-free sound chimes for tab clicks, stopwatch clocking in/out, pomodoro timer alarms, checkbox completions, sticker pins, reactions, and nudges.
+* **Bug Fixes & Chat heartbeats:**
+  - Resolved Math HL vs SL scope bug in `getSubjectLabel(subject, user)` where Rudolph's active subject incorrectly showed as Math AA SL on Mahi's view.
+  - Added a last online heartbeats timestamp below the partner's name in the Chat header for offline users.
+  - Hidden the weekly study timetable navigation tab for Rudolph to clean up layout.
+* **Automatic Safeguards, Backups & Recovery Utility:**
+  - Added `hasLoadedUserData` load lock in `firebase-sync.js` to block database writes before profile data is verified, preventing race condition empty cache overwrites on startup.
+  - Isolated reactions writes to targeted `.update({ liveReaction: ... })` instead of full-state document overrides.
+  - Added automated cloud backups in `study_backups` collection and daily archives in `study_archives` collection.
+  - Configured local storage backup mirroring (`BF_shifts_backup` and `GF_shifts_backup` saved on both devices).
+  - Added a compact select dropdown in the Timesheet header to Export/Import JSON local backup files.
+  - Created [recover_mahi_shifts.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/recover_mahi_shifts.js) to recover study spent hours directly from Safari or Chrome binary cache logs on macOS or Windows.
 
 ### Version 1.0.7 (May 23, 2026) - Postponed CS HL Database Topics & Version Bump
 * **Study Blueprint Adjustments:**

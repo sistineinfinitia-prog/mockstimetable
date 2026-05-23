@@ -27,6 +27,7 @@ This file serves as a reference blueprint for AI coding assistants. Read this be
   - [countdown.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/components/countdown.js): Countdown timer calculations and display updates.
   - [mistakes-log.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/components/mistakes-log.js): Handles mistakes logs rendering, past-paper filters, image upload compression, drag-and-drop / paste image attachment, and the lightbox zoom view.
 - [js/app.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/app.js): Handles application routing, tab navigation, global updates checker, active shift session trackers, and general window hooks.
+- [recover_mahi_shifts.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/recover_mahi_shifts.js): LevelDB utility scanner to recover study spent hours directly from browser cache binary logs.
 - [.agents/](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/.agents/):
   - [blueprint.md](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/.agents/blueprint.md): Core blueprint reference file for AI coding assistants.
   - [journal.md](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/.agents/journal.md): Changelog journal and roadmap tracking.
@@ -80,6 +81,60 @@ interface MistakesSchema {
     timestamp: number;
     imageUrl?: string; // Optional Firebase Storage download URL
   }>;
+}
+```
+
+#### Documents: `dashboard` and `gf_dashboard`
+Stores the active state, study plan checklist progress, logged shifts, and competitive stats for Rudolph (BF) and Mahi (GF):
+```typescript
+interface DashboardSchema {
+  agenda: Array<any>;
+  shifts: Array<{
+    subject: string;
+    duration: number; // minutes spent
+    date: string; // ISO timestamp
+  }>;
+  activeSession: null | {
+    subject: string;
+    startTime: number;
+  };
+  timetable: any;
+  blueprintCheckboxes: { [taskId: string]: boolean };
+  mistakes: Array<any>;
+  blueprintTasks: Array<any>;
+  pinnedStickers: Array<{
+    emoji: string;
+    sender: 'BF' | 'GF';
+    timestamp: number;
+  }>;
+  grindStreak: number;
+  lastStudyDate: string;
+  liveReaction: null | {
+    emoji: string;
+    timestamp: number;
+  };
+  tasksVersion: number;
+  lastActive: number;
+}
+```
+
+### Firestore Collection: `study_backups`
+Contains duplicate copies of shifts arrays to protect against empty desync writes. Updated only when local shifts list is non-empty.
+*   **Documents:** `dashboard_backup` (BF) and `gf_dashboard_backup` (GF)
+```typescript
+interface BackupSchema {
+  shifts: Array<any>;
+  lastBackup: number;
+}
+```
+
+### Firestore Collection: `study_archives`
+Contains permanent, daily-stamped historical backup snapshots of logged study hours.
+*   **Documents:** `${user}_shifts_archive_${YYYY-MM-DD}` (e.g. `GF_shifts_archive_2026-05-23`)
+```typescript
+interface ArchiveSchema {
+  shifts: Array<any>;
+  timestamp: number;
 }
 ```
 
