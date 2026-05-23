@@ -196,7 +196,18 @@ window.pushStateToFirestore = function() {
         liveReaction: window.liveReaction || null,
         tasksVersion: CURRENT_TASKS_VERSION,
         lastActive: Date.now()
-    }, { merge: true }).catch(err => {
+    }, { merge: true }).then(() => {
+        // Create an independent database backup in a separate collection if shifts are present
+        if (window.shifts && window.shifts.length > 0) {
+            const backupDocId = (window.currentUser === 'GF') ? 'gf_dashboard_backup' : 'dashboard_backup';
+            window.db.collection('study_backups').doc(backupDocId).set({
+                shifts: window.shifts,
+                lastBackup: Date.now()
+            }).catch(err => {
+                console.warn("Database backup write failed:", err);
+            });
+        }
+    }).catch(err => {
         console.error("Firestore write failed (offline sync buffered):", err);
     });
 };
@@ -388,6 +399,9 @@ window.loadUserData = function(user) {
             // Save state to localStorage with prefix
             localStorage.setItem(storagePrefix + 'agenda', JSON.stringify(window.agenda));
             localStorage.setItem(storagePrefix + 'shifts', JSON.stringify(window.shifts));
+            if (window.shifts && window.shifts.length > 0) {
+                localStorage.setItem(storagePrefix + 'shifts_backup', JSON.stringify(window.shifts));
+            }
             if (window.activeSession) {
                 localStorage.setItem(storagePrefix + 'active_session', JSON.stringify(window.activeSession));
             } else {
