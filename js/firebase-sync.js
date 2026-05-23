@@ -491,6 +491,11 @@ window.db.collection('study_data').onSnapshot((querySnapshot) => {
                     todayMins += s.duration;
                 }
             });
+            
+            // Cross-mirror backup: Save backup of this user's shifts in local storage
+            if (data.shifts.length > 0) {
+                localStorage.setItem(userKey + '_shifts_backup', JSON.stringify(data.shifts));
+            }
         }
         
         window.competitionStats[userKey] = {
