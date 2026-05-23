@@ -54,7 +54,7 @@ window.defaultTimetableBF = {
     },
     "Wed": {
         "morning": "Math AA HL\nTransformations (Ch 5) & Complex numbers (Ch 6)\nPolar equations",
-        "afternoon": "CS HL P1\nDatabases SL/HL Normalisation & SQL aggregators",
+        "afternoon": "CS HL Databases: SQL Joins, Normalisation, Views & Subqueries",
         "evening": "Spanish B\nIdentidades & Diario Format practice\nWrite entries"
     },
     "Thu": {
@@ -74,7 +74,7 @@ window.defaultTimetableBF = {
     },
     "Sun": {
         "morning": "Math HL\nInduction proof (Ch 9) & Trig (Ch 10-13) identities",
-        "afternoon": "Physics HL / CS\nFormula sheet revision & Mistakes log recap\nOOP subclass trace",
+        "afternoon": "Physics HL / CS\nFormula sheet revision & Mistakes log recap\nDatabase query review & OOP subclass trace",
         "evening": "REST\nPack bag for Monday. Sleep by 10:30 PM."
     }
 };
