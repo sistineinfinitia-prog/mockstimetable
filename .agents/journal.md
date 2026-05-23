@@ -5,13 +5,28 @@ This journal tracks updates, bug fixes, features, and future roadmap items. Futu
 ---
 
 ## 1. System Status
-- **Current Version:** `1.0.3`
-- **Last Sync Check:** May 22, 2026
+- **Current Version:** `1.0.7`
+- **Last Sync Check:** May 23, 2026
 - **Firebase Status:** Firestore and Storage configured, persistence enabled for offline coordination.
 
 ---
 
 ## 2. Chronological Log of Changes
+
+### Version 1.0.7 (May 23, 2026) - Postponed CS HL Database Topics & Version Bump
+* **Study Blueprint Adjustments:**
+  - Added notes to Saturday, May 23 and Wednesday, May 27 CS HL tasks in [index.html](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/index.html) to move unfinished A3.2/A3.3 database topics to Wednesday's dedicated database block.
+* **HTML Version Bump:**
+  - Bumped version in [index.html](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/index.html) to `1.0.7` and updated stylesheet/script asset references.
+
+### Version 1.0.6 (May 23, 2026) - Added AI Agent Study Guide & Topic Resolution Protocol
+* **Study Guide Protocol:**
+  - Created [.agents/study_guide.md](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/.agents/study_guide.md) to provide a concrete protocol for AI agents to answer topic/schedule queries using Revision Dojo Pro.
+  - Documented subject-specific study workflows (Practice-Heavy, Concept-Dense, Case-Study) mapping directly to Dojo resources.
+* **Blueprint Integration:**
+  - Updated [.agents/blueprint.md](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/.agents/blueprint.md) to register the new `.agents` directory files in the Core File Registry.
+* **HTML Version Bump:**
+  - Bumped version in `index.html` to `1.0.6` and updated all stylesheet/script asset references to trigger the client update detector.
 
 ### Version 1.0.3 (May 22, 2026) - Codebase Re-architecture to Modular Vanilla Structure
 * **Codebase Splitting:**

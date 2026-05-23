@@ -27,6 +27,10 @@ This file serves as a reference blueprint for AI coding assistants. Read this be
   - [countdown.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/components/countdown.js): Countdown timer calculations and display updates.
   - [mistakes-log.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/components/mistakes-log.js): Handles mistakes logs rendering, past-paper filters, image upload compression, drag-and-drop / paste image attachment, and the lightbox zoom view.
 - [js/app.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/js/app.js): Handles application routing, tab navigation, global updates checker, active shift session trackers, and general window hooks.
+- [.agents/](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/.agents/):
+  - [blueprint.md](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/.agents/blueprint.md): Core blueprint reference file for AI coding assistants.
+  - [journal.md](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/.agents/journal.md): Changelog journal and roadmap tracking.
+  - [study_guide.md](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/.agents/study_guide.md): AI Agent study guidance protocol for resolving study topics and schedules leveraging Revision Dojo Pro.
 
 ---
 
