@@ -467,6 +467,54 @@ document.addEventListener('DOMContentLoaded', () => {
         window.pushStateToFirestore();
     }
 
+    window.exportLocalBackup = function() {
+        if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
+        if (!window.shifts || window.shifts.length === 0) {
+            alert("No study shifts available to export!");
+            return;
+        }
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.shifts, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `${window.currentUser}_study_backup_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    };
+
+    window.importLocalBackup = function(event) {
+        if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedShifts = JSON.parse(e.target.result);
+                if (Array.isArray(importedShifts)) {
+                    if (confirm(`Are you sure you want to import ${importedShifts.length} study shifts? This will replace your current shifts log.`)) {
+                        window.shifts = importedShifts;
+                        const storagePrefix = window.currentUser + '_';
+                        localStorage.setItem(storagePrefix + 'shifts', JSON.stringify(window.shifts));
+                        localStorage.setItem(storagePrefix + 'shifts_backup', JSON.stringify(window.shifts));
+                        
+                        window.pushStateToFirestore();
+                        if (typeof window.triggerUIUpdates === 'function') {
+                            window.triggerUIUpdates();
+                        }
+                        alert("🎉 Study shifts successfully imported and synced to database!");
+                    }
+                } else {
+                    alert("Invalid backup file format! Must be a JSON array of shifts.");
+                }
+            } catch (err) {
+                alert("Failed to read backup file! Make sure it is a valid JSON file.");
+            }
+        };
+        reader.readAsText(file);
+    };
+
     function updateAnalytics() {
         let totalMins = 0;
         let todayMins = 0;

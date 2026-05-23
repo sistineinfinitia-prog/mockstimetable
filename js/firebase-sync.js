@@ -203,6 +203,16 @@ window.pushStateToFirestore = function() {
             window.db.collection('study_backups').doc(backupDocId).set({
                 shifts: window.shifts,
                 lastBackup: Date.now()
+            }).then(() => {
+                // Triple Backup Layer: Append-only Daily snapshot archive document in firestore
+                const dateKey = new Date().toISOString().substring(0, 10);
+                const archiveDocId = `${window.currentUser}_shifts_archive_${dateKey}`;
+                window.db.collection('study_archives').doc(archiveDocId).set({
+                    shifts: window.shifts,
+                    timestamp: Date.now()
+                }).catch(err => {
+                    console.warn("Daily archive write failed:", err);
+                });
             }).catch(err => {
                 console.warn("Database backup write failed:", err);
             });

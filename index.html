@@ -182,10 +182,13 @@
                             <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: var(--exam-color); margin-bottom: 1rem; text-align: center; margin-top: 0;">📊 My Shift Timesheet</h3>
                             
                             <!-- Timesheet Sub-tabs Mode Switcher -->
-                            <div class="timesheet-mode-switcher">
-                                <button class="timesheet-tab-btn active" id="timesheet-btn-summary">📊 Summary</button>
-                                <button class="timesheet-tab-btn" id="timesheet-btn-history">📜 History</button>
-                            </div>
+                             <div class="timesheet-mode-switcher" style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
+                                 <button class="timesheet-tab-btn active" id="timesheet-btn-summary">📊 Summary</button>
+                                 <button class="timesheet-tab-btn" id="timesheet-btn-history">📜 History</button>
+                                 <button class="timesheet-tab-btn" onclick="window.exportLocalBackup()" style="margin-left: auto; background: rgba(46, 213, 115, 0.1); border-color: rgba(46, 213, 115, 0.25); color: #2ed573; padding: 0.25rem 0.6rem; font-size: 0.75rem;" title="Export backup file">📥 Export</button>
+                                 <button class="timesheet-tab-btn" onclick="document.getElementById('import-backup-file').click()" style="background: rgba(255, 165, 0, 0.1); border-color: rgba(255, 165, 0, 0.25); color: #ffa500; padding: 0.25rem 0.6rem; font-size: 0.75rem;" title="Import backup file">📤 Import</button>
+                                 <input type="file" id="import-backup-file" accept=".json" style="display: none;" onchange="window.importLocalBackup(event)">
+                             </div>
 
                             <!-- Tab Content A: Summary Stats & Breakdown -->
                             <div id="timesheet-tab-summary-content" class="timesheet-tab-content active">
