@@ -467,6 +467,16 @@ document.addEventListener('DOMContentLoaded', () => {
         window.pushStateToFirestore();
     }
 
+    window.handleBackupAction = function(selectEl) {
+        const val = selectEl.value;
+        if (val === 'export') {
+            window.exportLocalBackup();
+        } else if (val === 'import') {
+            document.getElementById('import-backup-file').click();
+        }
+        selectEl.value = ""; // Reset select dropdown choice
+    };
+
     window.exportLocalBackup = function() {
         if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
         if (!window.shifts || window.shifts.length === 0) {
