@@ -182,13 +182,17 @@
                             <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: var(--exam-color); margin-bottom: 1rem; text-align: center; margin-top: 0;">📊 My Shift Timesheet</h3>
                             
                             <!-- Timesheet Sub-tabs Mode Switcher -->
-                             <div class="timesheet-mode-switcher" style="display: flex; gap: 0.3rem; align-items: center;">
+                             <div class="timesheet-mode-switcher">
                                  <button class="timesheet-tab-btn active" id="timesheet-btn-summary">📊 Summary</button>
                                  <button class="timesheet-tab-btn" id="timesheet-btn-history">📜 History</button>
-                                 <select class="timesheet-tab-btn" onchange="window.handleBackupAction(this)" style="margin-left: auto; width: 85px; padding: 0.25rem 0.4rem; font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main); cursor: pointer;" title="Export or Import backup file">
+                             </div>
+                             
+                             <!-- Centered Backup Dropdown -->
+                             <div style="display: flex; justify-content: center; margin-top: -1rem; margin-bottom: 1.2rem;">
+                                 <select class="timesheet-tab-btn" onchange="window.handleBackupAction(this)" style="width: 90px; padding: 0.25rem 0.4rem; font-size: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main); cursor: pointer; text-align-last: center; text-align: center;" title="Export or Import backup file">
                                      <option value="" disabled selected>💾 Backup</option>
-                                     <option value="export" style="background: #1e1e24;">📥 Export</option>
-                                     <option value="import" style="background: #1e1e24;">📤 Import</option>
+                                     <option value="export" style="background: #1e1e24; text-align: left;">📥 Export</option>
+                                     <option value="import" style="background: #1e1e24; text-align: left;">📤 Import</option>
                                  </select>
                                  <input type="file" id="import-backup-file" accept=".json" style="display: none;" onchange="window.importLocalBackup(event)">
                              </div>
