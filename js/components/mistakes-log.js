@@ -196,24 +196,143 @@ document.addEventListener('DOMContentLoaded', () => {
         window.pushStateToFirestore();
     };
 
+    window.currentMistakesTab = 'undone';
+    window.activePopupMistakeIndex = null;
+
+    window.switchMistakeTab = function(tabId) {
+        if (typeof window.playInteractionSound === 'function') window.playInteractionSound('tab');
+        window.currentMistakesTab = tabId;
+        
+        const undoneBtn = document.getElementById('mistake-tab-undone');
+        const doneBtn = document.getElementById('mistake-tab-done');
+        if (undoneBtn && doneBtn) {
+            if (tabId === 'undone') {
+                undoneBtn.classList.add('active');
+                doneBtn.classList.remove('active');
+            } else {
+                undoneBtn.classList.remove('active');
+                doneBtn.classList.add('active');
+            }
+        }
+        window.renderMistakes();
+    };
+
+    window.toggleMistakeResolved = function(index, event) {
+        if (event) event.stopPropagation();
+        if (window.isUpdatingFromFirestore) return;
+        
+        const m = window.mistakes[index];
+        if (m) {
+            m.resolved = !m.resolved;
+            if (typeof window.playInteractionSound === 'function') window.playInteractionSound('check');
+            window.saveMistakes();
+            window.renderMistakes();
+            
+            // Refresh modal if open on current index
+            if (window.activePopupMistakeIndex === index) {
+                window.openMistakeModal(index);
+            }
+        }
+    };
+
+    window.openMistakeModal = function(index) {
+        if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
+        window.activePopupMistakeIndex = index;
+        
+        const modal = document.getElementById('mistake-detail-modal');
+        const body = document.getElementById('mistake-modal-body');
+        if (!modal || !body) return;
+        
+        const m = window.mistakes[index];
+        if (!m) return;
+        
+        body.innerHTML = `
+            <div class="mistake-header" style="margin-bottom: 1.2rem;">
+                <span class="tag ${m.subject}">${window.getSubjectLabel ? window.getSubjectLabel(m.subject) : m.subject}</span>
+                <h3 style="font-family: 'Outfit'; font-size: 1.25rem; margin: 0.5rem 0 0 0; color: var(--text-main);">${escapeHtml(m.topic)}</h3>
+            </div>
+            
+            <div style="margin-bottom: 1.2rem;">
+                <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; letter-spacing: 0.5px;">🔍 The Mistake / Gap</h4>
+                <p style="font-size: 0.95rem; color: var(--text-main); margin: 0; line-height: 1.5; white-space: pre-wrap;">${escapeHtml(m.desc)}</p>
+            </div>
+            
+            ${m.imageUrl ? `
+            <div style="margin-bottom: 1.2rem;">
+                <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; letter-spacing: 0.5px;">📷 Attachment</h4>
+                <div class="mistake-card-image-container" onclick="window.openLightbox('${escapeHtml(m.imageUrl)}')" style="max-height: 200px;">
+                    <img src="${escapeHtml(m.imageUrl)}" style="width: 100%; height: 100%; object-fit: contain;" alt="Mistake Attachment">
+                </div>
+            </div>` : ''}
+            
+            <div style="margin-bottom: 1.5rem;" id="solution-container">
+                <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; letter-spacing: 0.5px;">🛡️ Correct General Rule</h4>
+                <div class="solution-cover" onclick="window.revealMistakeSolution(${index})">
+                    <div class="solution-cover-title">Click to Reveal Actionable Solution Rule</div>
+                    <button class="reveal-btn">👀 Reveal Solution</button>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 0.8rem; border-top: 1px solid var(--card-border); padding-top: 1.2rem; margin-top: 1.5rem;">
+                <button class="btn-primary" onclick="window.toggleMistakeResolved(${index})" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0.6rem 1rem; font-size: 0.85rem; background: ${m.resolved ? 'var(--text-muted)' : 'linear-gradient(135deg, #2ed573, #26af56)'}; box-shadow: none;">
+                    ${m.resolved ? '🔄 Re-open Mistake' : '✅ Mark Reviewed'}
+                </button>
+                <button class="btn-primary" onclick="window.deleteMistake(${index}); window.closeMistakeModal();" style="width: 120px; padding: 0.6rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, var(--math-color), #ff4757); box-shadow: none;">
+                    ✕ Delete
+                </button>
+            </div>
+        `;
+        
+        modal.classList.add('active');
+    };
+
+    window.revealMistakeSolution = function(index) {
+        if (typeof window.playInteractionSound === 'function') window.playInteractionSound('check');
+        const container = document.getElementById('solution-container');
+        if (!container) return;
+        
+        const m = window.mistakes[index];
+        if (!m) return;
+        
+        container.innerHTML = `
+            <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; letter-spacing: 0.5px;">🛡️ Correct General Rule</h4>
+            <div class="mistake-action solution-revealed" style="margin-top: 0.5rem;">
+                <strong>Rule:</strong> ${escapeHtml(m.action)}
+            </div>
+        `;
+    };
+
+    window.closeMistakeModal = function() {
+        if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
+        const modal = document.getElementById('mistake-detail-modal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+        window.activePopupMistakeIndex = null;
+    };
+
     window.renderMistakes = function() {
         if (!mistakesList) return;
         const searchQuery = searchMistakesInput ? searchMistakesInput.value.toLowerCase().trim() : '';
         const filterSubject = filterMistakeSubject ? filterMistakeSubject.value : 'all';
+        const targetTab = window.currentMistakesTab || 'undone';
         
         const filteredMistakes = window.mistakes.filter(m => {
+            const isResolved = !!m.resolved;
+            const matchesTab = (targetTab === 'done' ? isResolved === true : isResolved === false);
+            
             const matchesSearch = m.topic.toLowerCase().includes(searchQuery) || 
                                   m.desc.toLowerCase().includes(searchQuery) ||
                                   m.action.toLowerCase().includes(searchQuery);
             const matchesFilter = (filterSubject === 'all' || m.subject === filterSubject);
-            return matchesSearch && matchesFilter;
+            return matchesTab && matchesSearch && matchesFilter;
         });
 
         if (filteredMistakes.length === 0) {
             mistakesList.innerHTML = `
                 <div class="mistake-card" style="border-left-color: var(--exam-color); padding: 1.5rem;">
                     <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-                        No mistakes found. Add your first mistake or clear filters! 🛡️
+                        No ${targetTab === 'done' ? 'reviewed' : 'undone'} mistakes found. 🛡️
                     </div>
                 </div>
             `;
@@ -223,17 +342,21 @@ document.addEventListener('DOMContentLoaded', () => {
         mistakesList.innerHTML = filteredMistakes.map((m) => {
             const originalIndex = window.mistakes.indexOf(m);
             return `
-                <div class="mistake-card ${m.subject}">
-                    <div class="mistake-header">
-                        <span class="mistake-topic">${escapeHtml(m.topic)}</span>
-                        <button class="delete-mistake-btn" onclick="deleteMistake(${originalIndex})">✕</button>
+                <div class="mistake-summary-row ${m.subject}" onclick="window.openMistakeModal(${originalIndex})">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-grow: 1; overflow: hidden;">
+                        <span class="tag ${m.subject}" style="margin: 0; padding: 0.15rem 0.5rem; font-size: 0.75rem;">
+                            ${window.getSubjectLabel ? window.getSubjectLabel(m.subject) : m.subject}
+                        </span>
+                        <span class="mistake-topic" style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden; font-size: 0.85rem;">
+                            ${escapeHtml(m.topic)}
+                        </span>
                     </div>
-                    <div class="mistake-desc"><strong>Mistake:</strong> ${escapeHtml(m.desc)}</div>
-                    <div class="mistake-action"><strong>Rule:</strong> ${escapeHtml(m.action)}</div>
-                    ${m.imageUrl ? `
-                    <div class="mistake-card-image-container" onclick="openLightbox('${escapeHtml(m.imageUrl)}')">
-                        <img src="${escapeHtml(m.imageUrl)}" class="mistake-card-image" alt="Mistake Attachment" loading="lazy">
-                    </div>` : ''}
+                    <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;" onclick="event.stopPropagation()">
+                        <button class="resolve-mistake-btn" onclick="window.toggleMistakeResolved(${originalIndex}, event)" title="${m.resolved ? 'Re-open' : 'Mark Reviewed'}">
+                            ${m.resolved ? '🔄' : '✅'}
+                        </button>
+                        <button class="delete-mistake-btn" onclick="window.deleteMistake(${originalIndex})">✕</button>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -242,6 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deleteMistake = function(index) {
         if (window.isUpdatingFromFirestore) return;
         if (confirm("Are you sure you want to delete this mistake log?")) {
+            if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
             window.mistakes.splice(index, 1);
             window.saveMistakes();
             window.renderMistakes();
@@ -286,11 +410,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 
-                const newMistake = { subject, topic, desc, action };
+                const newMistake = { subject, topic, desc, action, resolved: false };
                 if (imageUrl) {
                     newMistake.imageUrl = imageUrl;
                 }
                 
+                if (typeof window.playInteractionSound === 'function') window.playInteractionSound('check');
                 window.mistakes.push(newMistake);
                 window.saveMistakes();
                 

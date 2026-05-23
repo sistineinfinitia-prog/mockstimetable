@@ -104,7 +104,7 @@
         <!-- Navigation Tabs -->
         <nav class="tabs-nav" aria-label="Main Navigation">
             <button class="tab-btn active" data-tab="desk">⚡ Work Desk</button>
-            <button class="tab-btn" data-tab="timetable">📅 Study Timetable</button>
+            <button class="tab-btn" data-tab="timetable" style="display: none !important;">📅 Study Timetable</button>
             <button class="tab-btn" data-tab="blueprint">🗺️ Study Blueprint</button>
             <button class="tab-btn" data-tab="mistakes">📓 Mistakes Log</button>
         </nav>
@@ -1234,9 +1234,15 @@
                             </form>
                         </div>
                         
-                        <!-- List view -->
-                        <div id="mistakes-list" class="mistakes-list-container">
-                            <!-- Mistakes rendered dynamically -->
+                        <!-- List view with categories -->
+                        <div>
+                            <div class="mistake-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                <button class="mistake-tab-btn active" id="mistake-tab-undone" onclick="window.switchMistakeTab('undone')">🔴 Undone Mistakes</button>
+                                <button class="mistake-tab-btn" id="mistake-tab-done" onclick="window.switchMistakeTab('done')">🟢 Reviewed</button>
+                            </div>
+                            <div id="mistakes-list" class="mistakes-list-container">
+                                <!-- Mistakes rendered dynamically -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1261,14 +1267,30 @@
         <img id="lightbox-image" class="lightbox-content" src="" alt="Enlarged view" onclick="event.stopPropagation()">
     </div>
 
+    <!-- Mistakes Detail Popup Modal -->
+    <div id="mistake-detail-modal" class="mistake-detail-modal" onclick="window.closeMistakeModal()">
+        <div class="mistake-detail-modal-content" onclick="event.stopPropagation()">
+            <button class="mistake-detail-modal-close" onclick="window.closeMistakeModal()">&times;</button>
+            <div id="mistake-modal-body">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Reactions Canvas -->
+    <div id="reaction-canvas" class="reaction-canvas"></div>
+
     <!-- Study Chat Widget -->
     <div id="study-chat-widget" class="study-chat-widget">
         <!-- Chat Panel Window -->
         <div id="chat-panel" class="chat-panel">
             <div class="chat-panel-header">
-                <div class="chat-partner-info">
-                    <span class="chat-partner-status" id="chat-partner-status-dot"></span>
-                    <span class="chat-partner-name" id="chat-partner-name-text">Study Chat</span>
+                <div class="chat-partner-info" style="display: flex; flex-direction: column; justify-content: center;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span class="chat-partner-status" id="chat-partner-status-dot"></span>
+                        <span class="chat-partner-name" id="chat-partner-name-text">Study Chat</span>
+                    </div>
+                    <span class="chat-partner-last-active" id="chat-partner-last-active" style="font-size: 0.7rem; color: var(--text-muted); margin-left: 14px; margin-top: 1px; display: none;"></span>
                 </div>
                 <div class="chat-header-actions">
                     <button id="chat-sound-toggle" class="chat-header-btn" onclick="toggleChatSound()" title="Toggle Sound">🔊</button>

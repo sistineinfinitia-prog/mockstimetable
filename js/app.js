@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Helper to get subject labels dynamically based on current user
-    function getSubjectLabel(sub) {
+    function getSubjectLabel(sub, user = window.currentUser) {
         const bfLabels = {
             math: 'Math AA HL',
             physics: 'Physics HL',
@@ -30,11 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
             span: 'Spanish ab initio',
             math: 'Math AA SL'
         };
-        if (window.currentUser === 'GF') {
+        if (user === 'GF') {
             return gfLabels[sub] || sub;
         }
         return bfLabels[sub] || sub;
     }
+    window.getSubjectLabel = getSubjectLabel;
 
     // Dynamic dropdown updates based on profile
     function populateSubjectDropdowns() {
@@ -133,6 +134,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function switchTab(tabId) {
+        if (typeof window.playInteractionSound === 'function') window.playInteractionSound('tab');
+        window.currentPickerType = null; // Close any picker panels on navigation
+        if (typeof window.renderCompetitionWidget === 'function') {
+            window.renderCompetitionWidget();
+        }
+
         tabButtons.forEach(b => {
             if (b.getAttribute('data-tab') === tabId) {
                 b.classList.add('active');
@@ -390,8 +397,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             document.getElementById('hero-title').innerText = "Road to 42";
 
-            // Show Timetable button
-            document.querySelector('[data-tab="timetable"]').style.display = 'flex';
+            // Hide Timetable button for Rudolph as well
+            document.querySelector('[data-tab="timetable"]').style.display = 'none';
+            // Switch away from timetable if active
+            const activeTabBtn = document.querySelector('.tab-btn.active');
+            if (activeTabBtn && activeTabBtn.getAttribute('data-tab') === 'timetable') {
+                switchTab('desk');
+            }
 
             // Blueprint views
             document.getElementById('blueprint-content-bf').style.display = 'block';
@@ -517,6 +529,16 @@ document.addEventListener('DOMContentLoaded', () => {
             html += '</div>';
             breakdownList.innerHTML = html;
         }
+        
+        // Calculate and push streak updates
+        calculateStreak();
+        const storagePrefix = window.currentUser + '_';
+        const oldStreak = parseInt(localStorage.getItem(storagePrefix + 'grind_streak')) || 0;
+        if (window.grindStreak !== oldStreak) {
+            localStorage.setItem(storagePrefix + 'grind_streak', window.grindStreak);
+            localStorage.setItem(storagePrefix + 'last_study_date', window.lastStudyDate);
+            window.pushStateToFirestore();
+        }
     }
 
     function renderShifts() {
@@ -564,93 +586,183 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!comparisonPanel) return;
         
         const stats = window.competitionStats;
-        const bf = stats['BF'] || { today: 0, total: 0, active: false, subject: '' };
-        const gf = stats['GF'] || { today: 0, total: 0, active: false, subject: '' };
+        const bf = stats['BF'] || { today: 0, total: 0, active: false, subject: '', pinnedStickers: [], grindStreak: 0 };
+        const gf = stats['GF'] || { today: 0, total: 0, active: false, subject: '', pinnedStickers: [], grindStreak: 0 };
         
-        let bfStatusHtml = '';
-        if (bf.active) {
-            bfStatusHtml = `<span class="comparison-status-badge active"><span class="pulse-dot"></span> Studying ${getSubjectLabel(bf.subject)}</span>`;
+        const bfActiveSubject = bf.active && bf.subject ? `Studying ${getSubjectLabel(bf.subject, 'BF')} ⚡` : '💤 Off the Clock';
+        const gfActiveSubject = gf.active && gf.subject ? `Studying ${getSubjectLabel(gf.subject, 'GF')} ⚡` : '💤 Off the Clock';
+        
+        // Determine leaders
+        const bfLeader = bf.today > gf.today;
+        const gfLeader = gf.today > bf.today;
+        const isTied = bf.today === gf.today;
+        
+        // Co-Grind Synergy Mode Check
+        const synergy = bf.active && gf.active;
+        if (synergy) {
+            comparisonPanel.classList.add('synergy-active');
         } else {
-            bfStatusHtml = `<span class="comparison-status-badge offline">💤 Off the Clock</span>`;
+            comparisonPanel.classList.remove('synergy-active');
         }
         
-        let gfStatusHtml = '';
-        if (gf.active) {
-            gfStatusHtml = `<span class="comparison-status-badge active"><span class="pulse-dot"></span> Studying ${getSubjectLabel(gf.subject)}</span>`;
-        } else {
-            gfStatusHtml = `<span class="comparison-status-badge offline">💤 Off the Clock</span>`;
-        }
-        
+        // Tug of War calculation
         const todaySum = bf.today + gf.today;
-        const todayBfPct = todaySum > 0 ? (bf.today / todaySum) * 100 : 50;
-        const todayGfPct = todaySum > 0 ? (gf.today / todaySum) * 100 : 50;
+        const ratio = todaySum > 0 ? (bf.today / todaySum) * 100 : 50;
         
-        let todayLeaderText = '';
-        if (bf.today > gf.today) {
-            const diff = (bf.today - gf.today).toFixed(1);
-            todayLeaderText = `👻 Rudolph is leading by <strong>${diff}h</strong> today!`;
-        } else if (gf.today > bf.today) {
-            const diff = (gf.today - bf.today).toFixed(1);
-            todayLeaderText = `🦋 Mahi is leading by <strong>${diff}h</strong> today!`;
+        let leadText = '';
+        if (bfLeader) {
+            leadText = `👻 Rudolph leads by ${(bf.today - gf.today).toFixed(1)}h today!`;
+        } else if (gfLeader) {
+            leadText = `🦋 Mahi leads by ${(gf.today - bf.today).toFixed(1)}h today!`;
         } else {
-            todayLeaderText = `⚖️ Neck and neck today!`;
+            leadText = `⚖️ Scores are tied today!`;
         }
-        
+
+        // Overall Tug of War calculation
         const totalSum = bf.total + gf.total;
-        const totalBfPct = totalSum > 0 ? (bf.total / totalSum) * 100 : 50;
-        const totalGfPct = totalSum > 0 ? (gf.total / totalSum) * 100 : 50;
+        const totalRatio = totalSum > 0 ? (bf.total / totalSum) * 100 : 50;
         
-        let totalLeaderText = '';
+        let totalLeadText = '';
         if (bf.total > gf.total) {
-            const diff = (bf.total - gf.total).toFixed(1);
-            totalLeaderText = `👻 Rudolph leads by <strong>${diff}h</strong> in total!`;
+            totalLeadText = `👻 Rudolph leads by ${(bf.total - gf.total).toFixed(1)}h overall!`;
         } else if (gf.total > bf.total) {
-            const diff = (gf.total - bf.total).toFixed(1);
-            totalLeaderText = `🦋 Mahi leads by <strong>${diff}h</strong> in total!`;
+            totalLeadText = `🦋 Mahi leads by ${(gf.total - bf.total).toFixed(1)}h overall!`;
         } else {
-            totalLeaderText = `⚖️ Scores are tied!`;
+            totalLeadText = `⚖️ Campaign scores are tied overall!`;
         }
-        
+
+        // Extracted first pinned sticker details
+        const bfSticker = bf.pinnedStickers && bf.pinnedStickers.length > 0 ? bf.pinnedStickers[0] : null;
+        const gfSticker = gf.pinnedStickers && gf.pinnedStickers.length > 0 ? gf.pinnedStickers[0] : null;
+
+        const bfStickerHtml = bfSticker ? `
+            <div class="sticker-corner-badge" title="${bfSticker.sender === 'GF' ? 'Mahi' : 'Rudolph'} pinned this on ${new Date(bfSticker.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}">
+                ${bfSticker.emoji}
+            </div>` : '';
+
+        const gfStickerHtml = gfSticker ? `
+            <div class="sticker-corner-badge" title="${gfSticker.sender === 'GF' ? 'Mahi' : 'Rudolph'} pinned this on ${new Date(gfSticker.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}">
+                ${gfSticker.emoji}
+            </div>` : '';
+
+        // Streaks counters
+        const bfStreakText = bf.grindStreak > 0 ? `🔥 ${bf.grindStreak}d` : '❄️ 0d';
+        const gfStreakText = gf.grindStreak > 0 ? `🔥 ${gf.grindStreak}d` : '❄️ 0d';
+
+        // Check if pickers are active
+        const reactionPickerOpen = window.currentPickerType === 'reaction';
+        const stickerPickerOpen = window.currentPickerType === 'sticker';
+
         comparisonPanel.innerHTML = `
-            <h3 style="color: var(--exam-color); font-family: 'Outfit'; font-size: 1.2rem; margin-top: 0; margin-bottom: 1.2rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">🔥 Study Comparison</h3>
+            <h3 style="color: var(--exam-color); font-family: 'Outfit'; font-size: 1.2rem; margin-top: 0; margin-bottom: 1.2rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                ${synergy ? '🔥 DUAL GRIND ACTIVE 🔥' : '⚔️ Study Matchup'}
+            </h3>
             
-            <div class="comparison-statuses" style="display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--card-border);">
-                <div style="flex: 1; text-align: center; border-right: 1px solid rgba(255,255,255,0.08);">
-                    <div style="font-weight: 700; font-family: 'Outfit'; font-size: 0.95rem; color: #70a1ff; margin-bottom: 0.25rem;">👻 Rudolph</div>
-                    ${bfStatusHtml}
+            <!-- Esports VS Grid -->
+            <div class="comparison-statuses-esport">
+                <!-- Rudolph (BF) Card -->
+                <div class="matchup-card ${bfLeader ? 'leader bf-glow' : (isTied ? '' : 'dimmed')}">
+                    ${bfLeader ? '<span class="avatar-crown">👑</span>' : ''}
+                    <div class="avatar-container ${bf.active ? 'active' : ''}">
+                        <div class="matchup-avatar">👻</div>
+                        ${bfStickerHtml}
+                    </div>
+                    <div style="font-weight: 700; font-family: 'Outfit'; font-size: 0.95rem; color: #70a1ff;">Rudolph</div>
+                    <span class="comparison-status-badge ${bf.active ? 'active' : 'offline'}" style="margin: 0.3rem 0;">
+                        ${bfActiveSubject}
+                    </span>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-top: 0.1rem;">
+                        Streak: ${bfStreakText}
+                    </div>
                 </div>
-                <div style="flex: 1; text-align: center;">
-                    <div style="font-weight: 700; font-family: 'Outfit'; font-size: 0.95rem; color: #ff6b81; margin-bottom: 0.25rem;">🦋 Mahi</div>
-                    ${gfStatusHtml}
+                
+                <!-- Central VS skew badge -->
+                <div class="matchup-vs-badge">VS</div>
+                
+                <!-- Mahi (GF) Card -->
+                <div class="matchup-card ${gfLeader ? 'leader gf-glow' : (isTied ? '' : 'dimmed')}">
+                    ${gfLeader ? '<span class="avatar-crown">👑</span>' : ''}
+                    <div class="avatar-container ${gf.active ? 'active' : ''}">
+                        <div class="matchup-avatar">🦋</div>
+                        ${gfStickerHtml}
+                    </div>
+                    <div style="font-weight: 700; font-family: 'Outfit'; font-size: 0.95rem; color: #ff6b81;">Mahi</div>
+                    <span class="comparison-status-badge ${gf.active ? 'active' : 'offline'}" style="margin: 0.3rem 0;">
+                        ${gfActiveSubject}
+                    </span>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-top: 0.1rem;">
+                        Streak: ${gfStreakText}
+                    </div>
                 </div>
             </div>
             
-            <div class="comparison-section" style="margin-bottom: 1.2rem;">
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;">
-                    <span>Today's Grind</span>
-                    <span style="color: var(--text-muted); font-size: 0.8rem;">${bf.today.toFixed(1)}h vs ${gf.today.toFixed(1)}h</span>
+            <!-- Daily Tug-of-War battle bar -->
+            <div class="tug-of-war-container">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.4rem;">
+                    <span>Daily Grind Matchup</span>
+                    <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: bold;">
+                        ${bf.today.toFixed(1)}h vs ${gf.today.toFixed(1)}h
+                    </span>
                 </div>
-                <div class="comparison-bar-track" style="height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; display: flex; border: 1px solid rgba(255,255,255,0.03);">
-                    <div class="comparison-bar-fill bf" style="width: ${todayBfPct}%; height: 100%; background: linear-gradient(90deg, #3a7bd5, #70a1ff); transition: width 0.5s ease-out;"></div>
-                    <div class="comparison-bar-fill gf" style="width: ${todayGfPct}%; height: 100%; background: linear-gradient(90deg, #ff6b81, #ff4757); transition: width 0.5s ease-out;"></div>
+                <div class="tug-of-war-bar">
+                    <div class="tug-of-war-bf" style="width: ${ratio}%;"></div>
+                    <div class="tug-of-war-gf" style="width: ${100 - ratio}%;"></div>
+                    <div class="tug-of-war-pointer" style="left: ${ratio}%;">${synergy ? '⚡' : '🔥'}</div>
                 </div>
-                <div style="font-size: 0.8rem; text-align: center; margin-top: 0.4rem; color: var(--exam-color); font-weight: 600;">
-                    ${todayLeaderText}
+                <div style="font-size: 0.75rem; text-align: center; margin-top: 0.4rem; color: var(--exam-color); font-weight: bold; letter-spacing: 0.3px;">
+                    ${leadText}
+                </div>
+            </div>
+
+            <!-- Overall Tug-of-War battle bar -->
+            <div class="tug-of-war-container" style="margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.4rem;">
+                    <span>Overall Campaign Matchup</span>
+                    <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: bold;">
+                        ${bf.total.toFixed(1)}h vs ${gf.total.toFixed(1)}h
+                    </span>
+                </div>
+                <div class="tug-of-war-bar">
+                    <div class="tug-of-war-bf" style="width: ${totalRatio}%;"></div>
+                    <div class="tug-of-war-gf" style="width: ${100 - totalRatio}%;"></div>
+                    <div class="tug-of-war-pointer" style="left: ${totalRatio}%; background: #2bcbba; box-shadow: 0 0 10px #2bcbba, 0 0 20px #0fbcf9;">🏆</div>
+                </div>
+                <div style="font-size: 0.75rem; text-align: center; margin-top: 0.4rem; color: #2bcbba; font-weight: bold; letter-spacing: 0.3px;">
+                    ${totalLeadText}
                 </div>
             </div>
             
-            <div class="comparison-section">
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;">
-                    <span>Overall Total</span>
-                    <span style="color: var(--text-muted); font-size: 0.8rem;">${bf.total.toFixed(1)}h vs ${gf.total.toFixed(1)}h</span>
-                </div>
-                <div class="comparison-bar-track" style="height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; display: flex; border: 1px solid rgba(255,255,255,0.03);">
-                    <div class="comparison-bar-fill bf" style="width: ${totalBfPct}%; height: 100%; background: linear-gradient(90deg, #3a7bd5, #70a1ff); transition: width 0.5s ease-out;"></div>
-                    <div class="comparison-bar-fill gf" style="width: ${totalGfPct}%; height: 100%; background: linear-gradient(90deg, #ff6b81, #ff4757); transition: width 0.5s ease-out;"></div>
-                </div>
-                <div style="font-size: 0.8rem; text-align: center; margin-top: 0.4rem; color: var(--exam-color); font-weight: 600;">
-                    ${totalLeaderText}
-                </div>
+            <!-- Interaction action toolbar -->
+            <div class="matchup-toolbar" style="position: relative;">
+                <button class="matchup-btn" onclick="window.togglePicker('reaction')">🚀 React</button>
+                <button class="matchup-btn" onclick="window.togglePicker('sticker')">📌 Pin Sticker</button>
+                <button class="matchup-btn" onclick="window.sendNudgeToPartner()">🔔 Nudge</button>
+                
+                <!-- Reaction Picker Popover overlay -->
+                ${reactionPickerOpen ? `
+                <div class="reaction-picker-overlay">
+                    <span class="picker-emoji" onclick="window.sendReactionToPartner('🔥')">🔥</span>
+                    <span class="picker-emoji" onclick="window.sendReactionToPartner('💤')">💤</span>
+                    <span class="picker-emoji" onclick="window.sendReactionToPartner('👑')">👑</span>
+                    <span class="picker-emoji" onclick="window.sendReactionToPartner('💀')">💀</span>
+                    <span class="picker-emoji" onclick="window.sendReactionToPartner('🧠')">🧠</span>
+                    <span class="picker-emoji" onclick="window.sendReactionToPartner('⚡')">⚡</span>
+                    <span class="picker-emoji" onclick="window.sendReactionToPartner('🎯')">🎯</span>
+                    <span class="picker-emoji" onclick="window.sendReactionToPartner('💖')">💖</span>
+                </div>` : ''}
+                
+                <!-- Sticker Picker Popover overlay -->
+                ${stickerPickerOpen ? `
+                <div class="sticker-picker-overlay">
+                    <span class="picker-emoji" onclick="window.pinStickerOnPartner('🔥')">🔥</span>
+                    <span class="picker-emoji" onclick="window.pinStickerOnPartner('💤')">💤</span>
+                    <span class="picker-emoji" onclick="window.pinStickerOnPartner('👑')">👑</span>
+                    <span class="picker-emoji" onclick="window.pinStickerOnPartner('💀')">💀</span>
+                    <span class="picker-emoji" onclick="window.pinStickerOnPartner('🧠')">🧠</span>
+                    <span class="picker-emoji" onclick="window.pinStickerOnPartner('⚡')">⚡</span>
+                    <span class="picker-emoji" onclick="window.pinStickerOnPartner('🎯')">🎯</span>
+                    <span class="picker-emoji" onclick="window.pinStickerOnPartner('💖')">💖</span>
+                </div>` : ''}
             </div>
         `;
     };
@@ -764,6 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const taskId = checkbox.getAttribute('data-task-id');
         checkbox.addEventListener('change', (e) => {
             if (window.isUpdatingFromFirestore) return;
+            if (typeof window.playInteractionSound === 'function') window.playInteractionSound('check');
             window.blueprintCheckboxes[taskId] = e.target.checked;
             
             const storagePrefix = window.currentUser + '_';
@@ -854,6 +967,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.toggleMahiBlueprintTask = function(index, checked) {
         if (window.isUpdatingFromFirestore) return;
+        if (typeof window.playInteractionSound === 'function') window.playInteractionSound('check');
         window.blueprintTasks[index].completed = checked;
         const storagePrefix = window.currentUser + '_';
         localStorage.setItem(storagePrefix + 'blueprint_tasks', JSON.stringify(window.blueprintTasks));
@@ -864,6 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.deleteMahiBlueprintTask = function(index) {
         if (window.isUpdatingFromFirestore) return;
         if (confirm("Are you sure you want to delete this blueprint target?")) {
+            if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
             window.blueprintTasks.splice(index, 1);
             const storagePrefix = window.currentUser + '_';
             localStorage.setItem(storagePrefix + 'blueprint_tasks', JSON.stringify(window.blueprintTasks));
@@ -1133,4 +1248,316 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof updateAnalytics === 'function') updateAnalytics();
         }
     });
+
+    // ==========================================================================
+    // Gamification & Audio Synthesis & Floating Reactions
+    // ==========================================================================
+
+    // Web Audio API Synthesizer Manager
+    window.playInteractionSound = function(type) {
+        const isSoundOn = localStorage.getItem('mocks_chat_sound_enabled') !== 'false';
+        if (!isSoundOn) return;
+        
+        try {
+            if (!window.audioCtx) {
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (window.audioCtx.state === 'suspended') {
+                window.audioCtx.resume();
+            }
+            const ctx = window.audioCtx;
+            const time = ctx.currentTime;
+            
+            if (type === 'click' || type === 'tab') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, time);
+                gain.gain.setValueAtTime(0.01, time);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + 0.08);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(time);
+                osc.stop(time + 0.08);
+            } else if (type === 'check') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, time);
+                gain.gain.setValueAtTime(0.03, time);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(time);
+                osc.stop(time + 0.3);
+            } else if (type === 'clockIn') {
+                const freqs = [300, 400, 500, 600];
+                freqs.forEach((f, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, time + idx * 0.08);
+                    gain.gain.setValueAtTime(0.03, time + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + idx * 0.08 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(time + idx * 0.08);
+                    osc.stop(time + idx * 0.08 + 0.25);
+                });
+            } else if (type === 'clockOut') {
+                const freqs = [600, 500, 400, 300];
+                freqs.forEach((f, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, time + idx * 0.08);
+                    gain.gain.setValueAtTime(0.03, time + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + idx * 0.08 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(time + idx * 0.08);
+                    osc.stop(time + idx * 0.08 + 0.25);
+                });
+            } else if (type === 'pomoStart') {
+                [0, 0.15].forEach(delay => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(660, time + delay);
+                    gain.gain.setValueAtTime(0.03, time + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + delay + 0.12);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(time + delay);
+                    osc.stop(time + delay + 0.12);
+                });
+            } else if (type === 'pomoReset') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, time);
+                gain.gain.setValueAtTime(0.03, time);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(time);
+                osc.stop(time + 0.15);
+            } else if (type === 'sticker') {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(900, time);
+                osc.frequency.exponentialRampToValueAtTime(400, time + 0.1);
+                gain.gain.setValueAtTime(0.04, time);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(time);
+                osc.stop(time + 0.1);
+            } else if (type === 'reaction') {
+                const freqs = [800, 1000, 1200];
+                freqs.forEach((f, idx) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, time + idx * 0.05);
+                    gain.gain.setValueAtTime(0.02, time + idx * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + idx * 0.05 + 0.1);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(time + idx * 0.05);
+                    osc.stop(time + idx * 0.05 + 0.1);
+                });
+            } else if (type === 'nudge') {
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(523.25, time);
+                gain1.gain.setValueAtTime(0.05, time);
+                gain1.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(time);
+                osc1.stop(time + 0.5);
+
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(783.99, time + 0.1);
+                gain2.gain.setValueAtTime(0.05, time + 0.1);
+                gain2.gain.exponentialRampToValueAtTime(0.001, time + 0.6);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(time + 0.1);
+                osc2.stop(time + 0.6);
+            }
+        } catch (e) {
+            console.warn("Audio synthesis block error:", e);
+        }
+    };
+
+    // Pickers visibility tracker
+    window.currentPickerType = null;
+    window.togglePicker = function(type) {
+        window.playInteractionSound('click');
+        if (window.currentPickerType === type) {
+            window.currentPickerType = null;
+        } else {
+            window.currentPickerType = type;
+        }
+        if (typeof window.renderCompetitionWidget === 'function') {
+            window.renderCompetitionWidget();
+        }
+    };
+
+    // Reaction and Sticker sync mechanisms
+    window.sendReactionToPartner = function(emoji) {
+        window.currentPickerType = null;
+        const partner = window.currentUser === 'GF' ? 'BF' : 'GF';
+        window.liveReaction = { emoji: emoji, timestamp: Date.now() };
+        
+        const storagePrefix = window.currentUser + '_';
+        localStorage.setItem(storagePrefix + 'live_reaction', JSON.stringify(window.liveReaction));
+        window.pushStateToFirestore();
+        
+        window.triggerFloatingReaction(emoji);
+        if (typeof window.renderCompetitionWidget === 'function') {
+            window.renderCompetitionWidget();
+        }
+    };
+
+    window.pinStickerOnPartner = function(emoji) {
+        window.currentPickerType = null;
+        const partner = window.currentUser === 'GF' ? 'BF' : 'GF';
+        const partnerDocId = (partner === 'GF') ? 'gf_dashboard' : 'dashboard';
+        
+        // Retrieve current pinned stickers of partner
+        const stats = window.competitionStats[partner];
+        let currentStickers = stats ? [...(stats.pinnedStickers || [])] : [];
+        
+        // Single pinned sticker design - replace last
+        const newSticker = {
+            emoji: emoji,
+            sender: window.currentUser,
+            timestamp: Date.now()
+        };
+        currentStickers = [newSticker];
+        
+        window.playInteractionSound('sticker');
+        
+        window.db.collection('study_data').doc(partnerDocId).update({
+            pinnedStickers: currentStickers
+        }).catch(err => {
+            console.error("Failed to pin sticker on partner:", err);
+        });
+        if (typeof window.renderCompetitionWidget === 'function') {
+            window.renderCompetitionWidget();
+        }
+    };
+
+    window.sendNudgeToPartner = function() {
+        window.sendReactionToPartner('🔔');
+    };
+
+    // Floating visual animation burst
+    window.triggerFloatingReaction = function(emoji) {
+        const canvas = document.getElementById('reaction-canvas');
+        if (!canvas) return;
+        
+        if (emoji !== '🔔') {
+            window.playInteractionSound('reaction');
+        } else {
+            window.playInteractionSound('nudge');
+            
+            // Spawn html toast notification
+            const partner = window.currentUser === 'GF' ? 'BF' : 'GF';
+            const partnerName = partner === 'GF' ? 'Mahi' : 'Rudolph';
+            showNudgeToast(`${partnerName} is nudging you to study! 🔔`);
+        }
+        
+        const numParticles = emoji === '🔔' ? 4 : 8;
+        for (let i = 0; i < numParticles; i++) {
+            const el = document.createElement('div');
+            el.className = 'floating-emoji';
+            el.textContent = emoji;
+            
+            const leftVal = 10 + Math.random() * 80;
+            const delayVal = Math.random() * 0.4;
+            const sizeVal = 1.5 + Math.random() * 1.5;
+            
+            el.style.left = `${leftVal}vw`;
+            el.style.fontSize = `${sizeVal}rem`;
+            el.style.animationDelay = `${delayVal}s`;
+            
+            canvas.appendChild(el);
+            setTimeout(() => el.remove(), 3500);
+        }
+    };
+
+    function showNudgeToast(msg) {
+        const toast = document.createElement('div');
+        toast.style.position = 'fixed';
+        toast.style.bottom = '30px';
+        toast.style.right = '30px';
+        toast.style.background = 'var(--toast-bg)';
+        toast.style.border = '1px solid var(--exam-color)';
+        toast.style.boxShadow = '0 12px 35px rgba(0,0,0,0.6)';
+        toast.style.padding = '0.9rem 1.4rem';
+        toast.style.borderRadius = '10px';
+        toast.style.color = '#fff';
+        toast.style.fontWeight = 'bold';
+        toast.style.fontSize = '0.85rem';
+        toast.style.display = 'flex';
+        toast.style.alignItems = 'center';
+        toast.style.gap = '8px';
+        toast.style.zIndex = '99999';
+        toast.style.animation = 'pickerSlide 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        
+        toast.innerHTML = `<span>⚡</span> <span>${msg}</span>`;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.4s ease';
+            setTimeout(() => toast.remove(), 400);
+        }, 4000);
+    }
+
+    // Dynamic Streak Calculator based on shifts
+    function calculateStreak() {
+        if (!window.shifts) return;
+        
+        const dailyMins = {};
+        window.shifts.forEach(s => {
+            const dateStr = new Date(s.date).toDateString();
+            dailyMins[dateStr] = (dailyMins[dateStr] || 0) + s.duration;
+        });
+
+        let streak = 0;
+        let checkDate = new Date();
+        const todayStr = checkDate.toDateString();
+        
+        let yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toDateString();
+
+        const todayMins = dailyMins[todayStr] || 0;
+        const yesterdayMins = dailyMins[yesterdayStr] || 0;
+
+        if (todayMins >= 90 || yesterdayMins >= 90) {
+            let currentCheck = todayMins >= 90 ? checkDate : yesterday;
+            while (true) {
+                const currentStr = currentCheck.toDateString();
+                if (dailyMins[currentStr] >= 90) {
+                    streak++;
+                    currentCheck.setDate(currentCheck.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+        }
+        
+        window.grindStreak = streak;
+        window.lastStudyDate = todayMins >= 90 ? todayStr : (yesterdayMins >= 90 ? yesterdayStr : '');
+    }
 });

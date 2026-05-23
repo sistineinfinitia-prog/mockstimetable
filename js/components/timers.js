@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.isUpdatingFromFirestore) return;
             if (!window.activeSession) {
                 // Clock In
+                if (typeof window.playInteractionSound === 'function') window.playInteractionSound('clockIn');
                 window.activeSession = {
                     start: Date.now(),
                     subject: shiftSubjectSelect ? shiftSubjectSelect.value : 'math'
@@ -85,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.initClockStatus();
             } else {
                 // Clock Out
+                if (typeof window.playInteractionSound === 'function') window.playInteractionSound('clockOut');
                 const durationSecs = Math.floor((Date.now() - window.activeSession.start) / 1000);
                 const durationMins = Math.max(1, Math.round(durationSecs / 60));
                 
@@ -216,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (pomoStartBtn) {
         pomoStartBtn.addEventListener('click', () => {
+            if (typeof window.playInteractionSound === 'function') window.playInteractionSound('pomoStart');
             if (pomoIsRunning) {
                 pausePomoTimer();
             } else {
@@ -226,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (pomoResetBtn) {
         pomoResetBtn.addEventListener('click', () => {
+            if (typeof window.playInteractionSound === 'function') window.playInteractionSound('pomoReset');
             pausePomoTimer();
             const activeBtn = document.querySelector('.pomo-mode-btn.active');
             if (activeBtn) {
@@ -239,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     pomoModeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
+            if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
             pomoModeBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
@@ -257,6 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
             pomoModeBtns.forEach(b => b.classList.remove('active'));
             pausePomoTimer();
             pomoTimeRemaining = mins * 60;

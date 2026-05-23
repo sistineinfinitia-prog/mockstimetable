@@ -90,6 +90,7 @@ window.toggleChatSound = function() {
     isSoundEnabled = !isSoundEnabled;
     localStorage.setItem('mocks_chat_sound_enabled', isSoundEnabled);
     updateSoundBtnUI();
+    if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
 };
 
 function updateSoundBtnUI() {
@@ -106,6 +107,7 @@ window.toggleChatWindow = function() {
     const badge = document.getElementById('chat-unread-badge');
     
     isChatOpen = !isChatOpen;
+    if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
     
     if (isChatOpen) {
         panel.classList.add('active');
@@ -313,6 +315,7 @@ function updatePartnerStatusUI() {
     const partner = window.currentUser === 'GF' ? 'BF' : 'GF';
     const statusDot = document.getElementById('chat-partner-status-dot');
     const partnerNameText = document.getElementById('chat-partner-name-text');
+    const lastActiveText = document.getElementById('chat-partner-last-active');
     
     if (!statusDot || !partnerNameText) return;
     
@@ -323,11 +326,25 @@ function updatePartnerStatusUI() {
     
     if (isOnline) {
         statusDot.classList.add('active');
-        const subjectLabel = stats.active && stats.subject ? ` (studying ${stats.subject} ⚡)` : ' (online)';
+        const subjectName = stats.active && stats.subject && window.getSubjectLabel ? window.getSubjectLabel(stats.subject, partner) : stats.subject;
+        const subjectLabel = stats.active && stats.subject ? ` (studying ${subjectName} ⚡)` : ' (online)';
         partnerNameText.textContent = getPartnerDisplayName(partner) + subjectLabel;
+        if (lastActiveText) lastActiveText.style.display = 'none';
     } else {
         statusDot.classList.remove('active');
         partnerNameText.textContent = getPartnerDisplayName(partner) + ' (offline)';
+        if (lastActiveText) {
+            if (stats && stats.lastActive) {
+                const d = new Date(stats.lastActive);
+                const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                const dateStr = d.toDateString() === new Date().toDateString() ? 'today' : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                lastActiveText.textContent = `Last online at ${timeStr} (${dateStr})`;
+                lastActiveText.style.display = 'block';
+            } else {
+                lastActiveText.textContent = 'Last online: unknown';
+                lastActiveText.style.display = 'block';
+            }
+        }
     }
 }
 

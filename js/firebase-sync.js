@@ -185,6 +185,10 @@ window.pushStateToFirestore = function() {
         blueprintCheckboxes: window.blueprintCheckboxes,
         mistakes: window.mistakes,
         blueprintTasks: window.blueprintTasks,
+        pinnedStickers: window.pinnedStickers || [],
+        grindStreak: window.grindStreak || 0,
+        lastStudyDate: window.lastStudyDate || '',
+        liveReaction: window.liveReaction || null,
         tasksVersion: CURRENT_TASKS_VERSION,
         lastActive: Date.now()
     }, { merge: true }).catch(err => {
@@ -294,6 +298,10 @@ window.loadUserData = function(user) {
     const localActiveSession = JSON.parse(localStorage.getItem(storagePrefix + 'active_session')) || null;
     const localTimetable = JSON.parse(localStorage.getItem(storagePrefix + 'timetable')) || defaultTimetable;
     const localMistakes = JSON.parse(localStorage.getItem(storagePrefix + 'mistakes')) || [];
+    const localPinnedStickers = JSON.parse(localStorage.getItem(storagePrefix + 'pinned_stickers')) || [];
+    const localGrindStreak = parseInt(localStorage.getItem(storagePrefix + 'grind_streak')) || 0;
+    const localLastStudyDate = localStorage.getItem(storagePrefix + 'last_study_date') || '';
+    const localLiveReaction = JSON.parse(localStorage.getItem(storagePrefix + 'live_reaction')) || null;
     
     let localBlueprintTasks = JSON.parse(localStorage.getItem(storagePrefix + 'blueprint_tasks')) || (user === 'GF' ? window.defaultBlueprintTasksMahi : []);
     if (user === 'GF') {
@@ -321,6 +329,10 @@ window.loadUserData = function(user) {
     window.blueprintCheckboxes = localBlueprintCheckboxes;
     window.mistakes = localMistakes;
     window.blueprintTasks = localBlueprintTasks;
+    window.pinnedStickers = localPinnedStickers;
+    window.grindStreak = localGrindStreak;
+    window.lastStudyDate = localLastStudyDate;
+    window.liveReaction = localLiveReaction;
 
     if (typeof window.updateUserActivity === 'function') {
         window.updateUserActivity();
@@ -347,6 +359,10 @@ window.loadUserData = function(user) {
             window.timetable = data.timetable || defaultTimetable;
             window.mistakes = data.mistakes || [];
             window.blueprintCheckboxes = data.blueprintCheckboxes || {};
+            window.pinnedStickers = data.pinnedStickers || [];
+            window.grindStreak = data.grindStreak || 0;
+            window.lastStudyDate = data.lastStudyDate || '';
+            window.liveReaction = data.liveReaction || null;
             
             const remoteVersion = data.tasksVersion || 0;
             let remoteBlueprintTasks = data.blueprintTasks || (user === 'GF' ? window.defaultBlueprintTasksMahi : []);
@@ -373,6 +389,14 @@ window.loadUserData = function(user) {
             localStorage.setItem(storagePrefix + 'timetable', JSON.stringify(window.timetable));
             localStorage.setItem(storagePrefix + 'mistakes', JSON.stringify(window.mistakes));
             localStorage.setItem(storagePrefix + 'blueprint_tasks', JSON.stringify(window.blueprintTasks));
+            localStorage.setItem(storagePrefix + 'pinned_stickers', JSON.stringify(window.pinnedStickers));
+            localStorage.setItem(storagePrefix + 'grind_streak', window.grindStreak);
+            localStorage.setItem(storagePrefix + 'last_study_date', window.lastStudyDate);
+            if (window.liveReaction) {
+                localStorage.setItem(storagePrefix + 'live_reaction', JSON.stringify(window.liveReaction));
+            } else {
+                localStorage.removeItem(storagePrefix + 'live_reaction');
+            }
             
             Object.keys(window.blueprintCheckboxes).forEach(taskId => {
                 localStorage.setItem(storagePrefix + taskId, window.blueprintCheckboxes[taskId]);
@@ -407,9 +431,13 @@ window.loadUserData = function(user) {
 
 // Global state for head-to-head competition
 window.competitionStats = {
-    'BF': { today: 0, total: 0, active: false, subject: '' },
-    'GF': { today: 0, total: 0, active: false, subject: '' }
+    'BF': { today: 0, total: 0, active: false, subject: '', pinnedStickers: [], grindStreak: 0, lastStudyDate: '', liveReaction: null, lastActive: 0 },
+    'GF': { today: 0, total: 0, active: false, subject: '', pinnedStickers: [], grindStreak: 0, lastStudyDate: '', liveReaction: null, lastActive: 0 }
 };
+
+if (!window.lastProcessedReactions) {
+    window.lastProcessedReactions = { 'BF': 0, 'GF': 0 };
+}
 
 // Start background listener for the entire collection to sync competition scores and live statuses
 window.db.collection('study_data').onSnapshot((querySnapshot) => {
@@ -438,8 +466,27 @@ window.db.collection('study_data').onSnapshot((querySnapshot) => {
             total: totalMins / 60,
             active: !!data.activeSession,
             subject: data.activeSession ? data.activeSession.subject : '',
+            pinnedStickers: data.pinnedStickers || [],
+            grindStreak: data.grindStreak || 0,
+            lastStudyDate: data.lastStudyDate || '',
+            liveReaction: data.liveReaction || null,
             lastActive: data.lastActive || 0
         };
+
+        // Real-Time Reaction Visual Trigger
+        if (userKey !== window.currentUser && data.liveReaction) {
+            const lastTime = window.lastProcessedReactions[userKey] || 0;
+            if (data.liveReaction.timestamp > lastTime) {
+                window.lastProcessedReactions[userKey] = data.liveReaction.timestamp;
+                
+                // Only float if it occurred very recently (prevent trigger on initial load or ancient updates)
+                if (Date.now() - data.liveReaction.timestamp < 10000) {
+                    if (typeof window.triggerFloatingReaction === 'function') {
+                        window.triggerFloatingReaction(data.liveReaction.emoji);
+                    }
+                }
+            }
+        }
     });
     
     // Trigger comparison widget redraw
