@@ -38,6 +38,7 @@ window.mistakes = [];
 window.blueprintTasks = [];
 
 window.isUpdatingFromFirestore = false;
+window.hasLoadedUserData = false;
 window.unsubscribeFirestore = null;
 
 // Default layouts
@@ -175,6 +176,10 @@ window.defaultBlueprintTasksMahi = [
 // Sync updates to Firestore
 window.pushStateToFirestore = function() {
     if (window.isUpdatingFromFirestore) return;
+    if (!window.hasLoadedUserData) {
+        console.warn("Skipping pushStateToFirestore because user data has not finished loading yet.");
+        return;
+    }
     
     const docId = (window.currentUser === 'GF') ? 'gf_dashboard' : 'dashboard';
     window.db.collection('study_data').doc(docId).set({
@@ -282,6 +287,7 @@ window.migrateMahiBlueprintTasks = function(tasks) {
 // Listen and sync with DB for current user
 window.loadUserData = function(user) {
     window.currentUser = user;
+    window.hasLoadedUserData = false;
     const docId = (user === 'GF') ? 'gf_dashboard' : 'dashboard';
     const storagePrefix = user + '_';
     const defaultTimetable = (user === 'GF') ? window.defaultTimetableMahi : window.defaultTimetableBF;
@@ -346,6 +352,7 @@ window.loadUserData = function(user) {
     window.unsubscribeFirestore = window.db.collection('study_data').doc(docId).onSnapshot((doc) => {
         if (!doc.exists) {
             console.log("No remote database document found for: " + docId + ". Uploading local cache as backup...");
+            window.hasLoadedUserData = true;
             window.pushStateToFirestore();
         } else {
             console.log("Remote database update received for profile: " + user);
@@ -408,6 +415,7 @@ window.loadUserData = function(user) {
             }
             
             window.isUpdatingFromFirestore = false;
+            window.hasLoadedUserData = true;
             
             // If remote data had to be migrated, push the updated state back to Firestore
             if (remoteModified) {

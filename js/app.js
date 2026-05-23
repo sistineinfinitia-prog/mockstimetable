@@ -1418,7 +1418,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const storagePrefix = window.currentUser + '_';
         localStorage.setItem(storagePrefix + 'live_reaction', JSON.stringify(window.liveReaction));
-        window.pushStateToFirestore();
+        
+        const docId = (window.currentUser === 'GF') ? 'gf_dashboard' : 'dashboard';
+        window.db.collection('study_data').doc(docId).update({
+            liveReaction: window.liveReaction
+        }).catch(err => {
+            console.error("Failed to push live reaction:", err);
+        });
         
         window.triggerFloatingReaction(emoji);
         if (typeof window.renderCompetitionWidget === 'function') {
