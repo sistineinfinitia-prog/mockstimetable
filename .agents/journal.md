@@ -34,7 +34,7 @@ This journal tracks updates, bug fixes, features, and future roadmap items. Futu
   - Added automated cloud backups in `study_backups` collection and daily archives in `study_archives` collection.
   - Configured local storage backup mirroring (`BF_shifts_backup` and `GF_shifts_backup` saved on both devices).
   - Added a compact select dropdown in the Timesheet header to Export/Import JSON local backup files.
-  - Created [recover_mahi_shifts.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/recover_mahi_shifts.js) to recover study spent hours directly from Safari or Chrome binary cache logs on macOS or Windows.
+  - Created and updated [recover_mahi_shifts.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/recover_mahi_shifts.js) to recover study spent hours directly from browser local storage binary logs (Chrome, Edge, or Safari) on Windows or macOS, featuring recursive directory traversal and UTF-16LE binary database parsing.
 
 ### Version 1.0.7 (May 23, 2026) - Postponed CS HL Database Topics & Version Bump
 * **Study Blueprint Adjustments:**
@@ -107,3 +107,20 @@ This journal tracks updates, bug fixes, features, and future roadmap items. Futu
 > 1. Bump the patch version in `index.html` (e.g. `1.0.2` -> `1.0.3`) if code changes were made to styles or scripts.
 > 2. Add an entry under **Chronological Log of Changes** describing the version, date, and items modified.
 > 3. Verify that all links are active and point to correct file schemes.
+
+---
+
+## 5. Lessons Learned & Recovery Post-Mortem
+
+### Case Study: macOS Safari Local Storage Recovery (May 24, 2026)
+* **The Issue:** Mahi's study shifts database on macOS Safari was cleared, and the initial copy-paste terminal script failed to recover it.
+* **Root Cause 1: zsh Wildcard Globbing Error (`no matches found`):**
+  On macOS, the default shell is `zsh`. In `zsh`, if a wildcard search (like `*.localstorage`) has zero matches in a directory, the shell aborts execution with `zsh: no matches found` *before* executing the command (even if output is redirected with `2>/dev/null`).
+  - *Corrective Action:* Avoid shell globbing (`*`) in loops when searching directories that may not contain matches. Instead, use `find` (where the wildcard is quoted, e.g. `"-name" "*.localstorage"`) or zsh nullglob qualifiers like `*(N)` to prevent zsh from raising fatal expansion errors.
+* **Root Cause 2: Modern Sandboxed Safari Directories:**
+  Safari no longer stores local storage in `~/Library/Safari/LocalStorage/` on modern macOS. It is now hidden deep in sandboxed containers:
+  `~/Library/Containers/com.apple.Safari/Data/Library/WebKit/WebsiteData/LocalStorage/`
+  - *Corrective Action:* Expanded target folders in the Node.js recovery utility to search sandboxed WebKit containers recursively.
+* **Root Cause 3: SQLite UTF-16LE Encoding:**
+  WebKit stores LocalStorage key-value pairs as SQLite databases, but both keys and values are encoded in UTF-16LE (each ASCII character followed by a `\0` null byte). A standard binary scan for `"GF_shifts"` will fail unless it searches for the UTF-16LE buffer (`G\0F\0...\0`) and properly decodes the payload chunk from UTF-16LE to UTF-8 before parsing as JSON.
+  - *Corrective Action:* Configured [recover_mahi_shifts.js](file:///c:/Users/Rudolph/Documents/mocks%20study%20plan/recover_mahi_shifts.js) to scan for both UTF-8 and UTF-16LE buffers, and decode matched chunks accordingly.
