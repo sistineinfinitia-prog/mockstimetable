@@ -122,6 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let pomoTargetEndTime = null; // target timestamp when timer finishes
     let pomoTimerInterval = null;
     let pomoIsRunning = false;
+    
+    let pomoSessionDuration = 3000; // default 50 mins
+    let pomoSessionType = 'work-50';
 
     const pomoDisplay = document.getElementById('pomo-display');
     const pomoStartBtn = document.getElementById('pomo-start');
@@ -192,6 +195,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 pomoStartBtn.innerText = 'Start';
                 pomoStartBtn.className = 'pomo-btn start';
                 playPomoAlarm();
+                
+                // Log completed Pomodoro session
+                try {
+                    if (!window.pomosCompleted) window.pomosCompleted = [];
+                    const subjectVal = document.getElementById('shift-subject')?.value || 'other';
+                    window.pomosCompleted.push({
+                        timestamp: Date.now(),
+                        duration: Math.round(pomoSessionDuration / 60), // in minutes
+                        type: pomoSessionType,
+                        subject: subjectVal
+                    });
+                    const storagePrefix = window.currentUser + '_';
+                    localStorage.setItem(storagePrefix + 'pomos_completed', JSON.stringify(window.pomosCompleted));
+                    if (typeof window.pushStateToFirestore === 'function') {
+                        window.pushStateToFirestore();
+                    }
+                } catch (e) {
+                    console.warn("Failed to log Pomodoro completion:", e);
+                }
+                
                 alert("⏰ Shift segment complete! Time for a rest block.");
             }
         }
@@ -248,7 +271,9 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
             
             pausePomoTimer();
-            pomoTimeRemaining = parseInt(btn.getAttribute('data-time'));
+            pomoSessionDuration = parseInt(btn.getAttribute('data-time'));
+            pomoSessionType = btn.getAttribute('data-type');
+            pomoTimeRemaining = pomoSessionDuration;
             updatePomoDisplay();
         });
     });
@@ -265,7 +290,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof window.playInteractionSound === 'function') window.playInteractionSound('click');
             pomoModeBtns.forEach(b => b.classList.remove('active'));
             pausePomoTimer();
-            pomoTimeRemaining = mins * 60;
+            pomoSessionDuration = mins * 60;
+            pomoSessionType = 'custom';
+            pomoTimeRemaining = pomoSessionDuration;
             updatePomoDisplay();
             pomoCustomInput.value = '';
         });

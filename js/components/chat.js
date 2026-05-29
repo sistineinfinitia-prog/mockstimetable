@@ -196,6 +196,14 @@ window.handleChatSubmit = async function(event) {
     // Clear input immediately for snappy experience
     input.value = ''; 
     
+    // Increment chat messages sent telemetry
+    window.totalChatMessagesSent = (window.totalChatMessagesSent || 0) + 1;
+    const storagePrefix = window.currentUser + '_';
+    localStorage.setItem(storagePrefix + 'total_chat_messages_sent', window.totalChatMessagesSent);
+    if (typeof window.pushStateToFirestore === 'function') {
+        window.pushStateToFirestore();
+    }
+    
     // Update user activity immediately upon sending chat
     if (typeof window.updateUserActivity === 'function') {
         window.updateUserActivity();

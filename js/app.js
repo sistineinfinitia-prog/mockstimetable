@@ -1477,11 +1477,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const storagePrefix = window.currentUser + '_';
         localStorage.setItem(storagePrefix + 'live_reaction', JSON.stringify(window.liveReaction));
         
+        // Increment telemetry counters
+        if (emoji === '🔔') {
+            window.nudgesSent = (window.nudgesSent || 0) + 1;
+            localStorage.setItem(storagePrefix + 'nudges_sent', window.nudgesSent);
+        } else {
+            window.reactionsSent = (window.reactionsSent || 0) + 1;
+            localStorage.setItem(storagePrefix + 'reactions_sent', window.reactionsSent);
+        }
+        
         const docId = (window.currentUser === 'GF') ? 'gf_dashboard' : 'dashboard';
-        window.db.collection('study_data').doc(docId).update({
-            liveReaction: window.liveReaction
-        }).catch(err => {
-            console.error("Failed to push live reaction:", err);
+        const updatePayload = {
+            liveReaction: window.liveReaction,
+            nudgesSent: window.nudgesSent,
+            reactionsSent: window.reactionsSent
+        };
+        
+        window.db.collection('study_data').doc(docId).update(updatePayload).catch(err => {
+            console.error("Failed to push live reaction and counters:", err);
         });
         
         window.triggerFloatingReaction(emoji);

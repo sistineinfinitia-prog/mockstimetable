@@ -37,6 +37,14 @@ window.blueprintCheckboxes = {};
 window.mistakes = [];
 window.blueprintTasks = [];
 
+// Study Wrapped Telemetry variables
+window.totalChatMessagesSent = 0;
+window.nudgesSent = 0;
+window.reactionsSent = 0;
+window.pomosCompleted = [];
+window.visitCount = 0;
+window.hasIncrementedVisit = false;
+
 window.isUpdatingFromFirestore = false;
 window.hasLoadedUserData = false;
 window.unsubscribeFirestore = null;
@@ -195,7 +203,12 @@ window.pushStateToFirestore = function() {
         lastStudyDate: window.lastStudyDate || '',
         liveReaction: window.liveReaction || null,
         tasksVersion: CURRENT_TASKS_VERSION,
-        lastActive: Date.now()
+        lastActive: Date.now(),
+        totalChatMessagesSent: window.totalChatMessagesSent || 0,
+        nudgesSent: window.nudgesSent || 0,
+        reactionsSent: window.reactionsSent || 0,
+        pomosCompleted: window.pomosCompleted || [],
+        visitCount: window.visitCount || 0
     }, { merge: true }).then(() => {
         // Create an independent database backup in a separate collection if shifts are present
         if (window.shifts && window.shifts.length > 0) {
@@ -329,6 +342,11 @@ window.loadUserData = function(user) {
     const localGrindStreak = parseInt(localStorage.getItem(storagePrefix + 'grind_streak')) || 0;
     const localLastStudyDate = localStorage.getItem(storagePrefix + 'last_study_date') || '';
     const localLiveReaction = JSON.parse(localStorage.getItem(storagePrefix + 'live_reaction')) || null;
+    const localTotalChat = parseInt(localStorage.getItem(storagePrefix + 'total_chat_messages_sent')) || 0;
+    const localNudges = parseInt(localStorage.getItem(storagePrefix + 'nudges_sent')) || 0;
+    const localReactions = parseInt(localStorage.getItem(storagePrefix + 'reactions_sent')) || 0;
+    const localPomos = JSON.parse(localStorage.getItem(storagePrefix + 'pomos_completed')) || [];
+    const localVisitCount = parseInt(localStorage.getItem(storagePrefix + 'visit_count')) || 0;
     
     let localBlueprintTasks = JSON.parse(localStorage.getItem(storagePrefix + 'blueprint_tasks')) || (user === 'GF' ? window.defaultBlueprintTasksMahi : []);
     if (user === 'GF') {
@@ -360,6 +378,11 @@ window.loadUserData = function(user) {
     window.grindStreak = localGrindStreak;
     window.lastStudyDate = localLastStudyDate;
     window.liveReaction = localLiveReaction;
+    window.totalChatMessagesSent = localTotalChat;
+    window.nudgesSent = localNudges;
+    window.reactionsSent = localReactions;
+    window.pomosCompleted = localPomos;
+    window.visitCount = localVisitCount;
 
     if (typeof window.updateUserActivity === 'function') {
         window.updateUserActivity();
@@ -374,6 +397,10 @@ window.loadUserData = function(user) {
         if (!doc.exists) {
             console.log("No remote database document found for: " + docId + ". Uploading local cache as backup...");
             window.hasLoadedUserData = true;
+            if (!window.hasIncrementedVisit) {
+                window.visitCount++;
+                window.hasIncrementedVisit = true;
+            }
             window.pushStateToFirestore();
         } else {
             console.log("Remote database update received for profile: " + user);
@@ -391,6 +418,23 @@ window.loadUserData = function(user) {
             window.grindStreak = data.grindStreak || 0;
             window.lastStudyDate = data.lastStudyDate || '';
             window.liveReaction = data.liveReaction || null;
+            window.totalChatMessagesSent = data.totalChatMessagesSent || 0;
+            window.nudgesSent = data.nudgesSent || 0;
+            window.reactionsSent = data.reactionsSent || 0;
+            window.pomosCompleted = data.pomosCompleted || [];
+            
+            // Reconcile and increment visit count on first load
+            if (!window.hasIncrementedVisit) {
+                window.visitCount = (data.visitCount || 0) + 1;
+                window.hasIncrementedVisit = true;
+                window.db.collection('study_data').doc(docId).update({
+                    visitCount: window.visitCount
+                }).catch(err => {
+                    console.warn("Failed to save incremented visitCount to Firestore:", err);
+                });
+            } else {
+                window.visitCount = data.visitCount || 0;
+            }
             
             const remoteVersion = data.tasksVersion || 0;
             let remoteBlueprintTasks = data.blueprintTasks || (user === 'GF' ? window.defaultBlueprintTasksMahi : []);
@@ -428,6 +472,12 @@ window.loadUserData = function(user) {
             } else {
                 localStorage.removeItem(storagePrefix + 'live_reaction');
             }
+            
+            localStorage.setItem(storagePrefix + 'total_chat_messages_sent', window.totalChatMessagesSent);
+            localStorage.setItem(storagePrefix + 'nudges_sent', window.nudgesSent);
+            localStorage.setItem(storagePrefix + 'reactions_sent', window.reactionsSent);
+            localStorage.setItem(storagePrefix + 'pomos_completed', JSON.stringify(window.pomosCompleted));
+            localStorage.setItem(storagePrefix + 'visit_count', window.visitCount);
             
             Object.keys(window.blueprintCheckboxes).forEach(taskId => {
                 localStorage.setItem(storagePrefix + taskId, window.blueprintCheckboxes[taskId]);
