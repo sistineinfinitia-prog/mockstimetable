@@ -1,6 +1,6 @@
 /* js/firebase-sync.js */
 
-const CURRENT_TASKS_VERSION = 2;
+const CURRENT_TASKS_VERSION = 3;
 
 // Initialize Firebase & Firestore
 const firebaseConfig = {
@@ -124,7 +124,7 @@ window.defaultBlueprintTasksMahi = [
 
     { id: "gf-leave-thu-1", date: "Thursday, May 28", phase: "Study Leave", subject: "math", time: "Morning (10AM-1PM)", title: "Sets, Venn Diagrams & Probability", desc: "Sets and Venn diagrams, right angle measurement (trig), and basic probability.", completed: false, tip: "💡 Probability of A union B: P(A) + P(B) - P(A intersect B)!" },
     { id: "gf-leave-thu-2", date: "Thursday, May 28", phase: "Study Leave", subject: "bio", time: "Afternoon (2PM-5PM)", title: "Theme C: Enzymes, Metabolism, Respiration & Photosynthesis", desc: "Focus on Theme C: C1.1 (Enzymes and Metabolism), C1.2 (Cell Respiration), and C1.3 (Photosynthesis). Practice sketching metabolic pathways and the light reactions.", completed: false, tip: "💡 Make sure to differentiate photophosphorylation from oxidative phosphorylation!" },
-    { id: "gf-leave-thu-3", date: "Thursday, May 28", phase: "Study Leave", subject: "span", time: "Evening (6PM-7:30PM)", title: "Reading Comprehension Past Paper", desc: "Do one full Spanish ab initio Paper 1 reading booklet. Mark using the markscheme.", completed: false },
+    { id: "gf-leave-thu-3", date: "Thursday, May 28", phase: "Study Leave", subject: "span", time: "Evening (6:00PM-7:30PM)", title: "Reading Comprehension Past Paper", desc: "Do one full Spanish ab initio Paper 2 reading passage (45 mins). Mark using the markscheme.", completed: false },
 
     { id: "gf-leave-fri-1", date: "Friday, May 29", phase: "Study Leave", subject: "chem", time: "Morning (10AM-1PM)", title: "Classification of Matter & Periodic Table", desc: "Structure 3.1 (The periodic table: Classification of elements) and 3.2 (Functional groups: Classification of organic compounds). Review trends across Period 3.", completed: false, tip: "💡 Transition metals have variable oxidation states and form colored complexes!" },
     { id: "gf-leave-fri-2", date: "Friday, May 29", phase: "Study Leave", subject: "econ", time: "Afternoon (2PM-5PM)", title: "Market Structures & Theory of the Firm", desc: "Review perfect competition, monopoly, monopolistic competition, oligopoly, and barriers to entry. Practice profit-max and allocative efficiency diagrams.", completed: false, tip: "💡 Monopoly profit maximization is always where MC = MR!" },
@@ -156,10 +156,10 @@ window.defaultBlueprintTasksMahi = [
     { id: "gf-lead-thu-3", date: "Thursday, June 4", phase: "Study Leave", subject: "span", time: "Evening (6PM-7:30PM)", title: "REST & Sleep Early", desc: "Prepare exam stationery (black pens, calculator, water). Sleep early for Spanish P1 tomorrow!", completed: false },
 
     // Phase 3: Mock Exams
-    { id: "gf-exam-fri-1", date: "Friday, June 5", phase: "Mock Exams", subject: "exam", time: "7:50 AM", title: "📝 SPANISH AB INITIO P1 EXAM", desc: "Reading comprehension & vocabulary paper.", completed: false },
-    { id: "gf-exam-fri-2", date: "Friday, June 5", phase: "Mock Exams", subject: "span", time: "Afternoon", title: "Spanish P2 & English P1 Prep", desc: "Review Spanish writing structures and English infographic analysis tips.", completed: false },
+    { id: "gf-exam-fri-1", date: "Friday, June 5", phase: "Mock Exams", subject: "exam", time: "7:50 AM - 9:05 AM", title: "📝 SPANISH AB INITIO P1 EXAM (Writing)", desc: "Writing paper (1h 15m).", completed: false },
+    { id: "gf-exam-fri-2", date: "Friday, June 5", phase: "Mock Exams", subject: "span", time: "Afternoon", title: "Spanish P2 & English P1 Prep", desc: "Review Spanish reading & listening comprehension tips and English infographic analysis guidelines.", completed: false },
 
-    { id: "gf-exam-mon-1", date: "Monday, June 8", phase: "Mock Exams", subject: "exam", time: "7:50 AM", title: "📝 SPANISH AB INITIO P2 EXAM", desc: "Writing paper.", completed: false },
+    { id: "gf-exam-mon-1", date: "Monday, June 8", phase: "Mock Exams", subject: "exam", time: "7:50 AM - 9:05 AM", title: "📝 SPANISH AB INITIO P2 EXAM (Reading & Listening)", desc: "Reading & Listening paper (1h 15m total: 45m reading, 30m listening).", completed: false },
     { id: "gf-exam-mon-2", date: "Monday, June 8", phase: "Mock Exams", subject: "exam", time: "10:00 AM", title: "📝 ENGLISH SL P1 EXAM", desc: "Infographics / textual analysis paper.", completed: false },
     { id: "gf-exam-mon-3", date: "Monday, June 8", phase: "Mock Exams", subject: "exam", time: "12:50 PM", title: "📝 CHEMISTRY HL P1 EXAM", desc: "Multiple choice paper.", completed: false },
     { id: "gf-exam-mon-4", date: "Monday, June 8", phase: "Mock Exams", subject: "chem", time: "Evening", title: "Chemistry HL Paper 2 Review", desc: "Final review of Structures 1-3 (particulate nature, bonding, and classification of matter).", completed: false },

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IBDP Mocks Study Timetable & Study Portal</title>
     <meta name="description" content="A premium modular Single-Page Application study portal and mock exams preparation planner with Firestore sync, custom Pomodoro timer, dynamic schedules, and mistakes log.">
-    <meta name="version" content="1.0.9">
+    <meta name="version" content="1.1.0">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <!-- Stylesheets -->
@@ -912,31 +912,61 @@
                                 </li>
                                 <li class="task-item cs">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-tue-cs2">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-cs-p2-prep">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Afternoon (3PM-5:30PM)</span>
-                                            <strong>CS HL & Business: P2 Case Files Prep</strong> - Focus on database schemas, SQL queries, and Business Unit 1-3 theories.
+                                            <span class="time-badge">Afternoon (3:00PM-5:30PM)</span>
+                                            <strong>CS HL: P2 Case Study & Database Prep</strong> - SQL query practice from schemas, OOP subclass trace.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item bus">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-tue-cs2-evening">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-bus-finance">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Evening (6PM-8PM)</span>
-                                            <strong>Business SL: Unit 3 Finance calculations practice</strong> & CS P2 pseudocode drills.
+                                            <span class="time-badge">Evening (6:00PM-7:30PM)</span>
+                                            <strong>Business SL: Unit 3 Finance Blitz</strong> - Break-even, cash flows, final accounts, ratios, formulas.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item bus">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-bus-unit1">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (7:30PM-8:30PM)</span>
+                                            <strong>Business SL: Unit 1 Core Terms</strong> - Stakeholders, SWOT/PEST, objectives, org structure.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item bus">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-bus-unit2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (8:30PM-9:30PM)</span>
+                                            <strong>Business SL: Unit 2 Key Theories</strong> - Motivation, leadership styles, recruitment.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item bus">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-bus-case">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (9:30PM-10:00PM)</span>
+                                            <strong>Business SL: Past Paper P2 Skim</strong> - Practice structuring case study responses.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-tue-cs2-recall">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-sleep">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Recall (8:30PM-9PM)</span>
-                                            <strong>Nightly Recall: CS SQL syntax & Business finance formulas</strong>.
+                                            <span class="time-badge">10:00 PM</span>
+                                            <strong>SLEEP 😴</strong> - Night before CS P2 & Business P2 exams.
                                         </span>
                                     </label>
                                 </li>
@@ -967,31 +997,51 @@
                                 </li>
                                 <li class="task-item span">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-wed-span">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-span-skeleton">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Afternoon (2PM-5:30PM)</span>
-                                            <strong>Spanish B: Reading Comprehension Practice</strong> - Read past paper texts and analyze vocab.
+                                            <span class="time-badge">Afternoon (1:30PM-3:30PM)</span>
+                                            <strong>Spanish B: Build Global Writing Skeleton</strong> - Universal template for Blog, Email, Letter, Article, Folleto, Diario. Key connectors.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item span">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-wed-span-evening">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-span-layouts">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Evening (6PM-8PM)</span>
-                                            <strong>Spanish B: Listening and vocabulary drill</strong>.
+                                            <span class="time-badge">Afternoon (3:30PM-5:30PM)</span>
+                                            <strong>Spanish B: Text Type Layouts</strong> - Memorize layouts, draft a blog post using the skeleton.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-math-ch5-6">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6:00PM-8:30PM)</span>
+                                            <strong>Math AA HL: Ch 5 (Transformations) & Ch 6 (Complex Numbers)</strong> - Core exam question types.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-math-practice">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (8:30PM-10:00PM)</span>
+                                            <strong>Math AA HL: Ch 5-6 Practice Questions</strong> - Solve 5 topical past paper questions.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-wed-span-recall">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-recall">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Recall (8:30PM-9PM)</span>
-                                            <strong>Nightly Recall: Spanish high-value vocabulary & text type layouts</strong>.
+                                            <span class="time-badge">Recall (10:00PM-10:30PM)</span>
+                                            <strong>Nightly Recall: Spanish text types & Math complex numbers formulas</strong>.
                                         </span>
                                     </label>
                                 </li>
@@ -1002,41 +1052,71 @@
                             <ul class="task-list">
                                 <li class="task-item span">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-thu-span">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-span-p1-practice">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Morning (8:30AM-12:30PM)</span>
-                                            <strong>Spanish B: Full Paper 1 Reading & Listening booklets</strong> - Timed practice.
+                                            <span class="time-badge">Morning (8:30AM-10:30AM)</span>
+                                            <strong>Spanish B: Timed Paper 1 (Writing) Practice</strong> - Complete a full writing task under exam conditions (1h 15m) using layouts & skeleton.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item span">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-thu-span-afternoon">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-span-review">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Afternoon (2PM-5:30PM)</span>
-                                            <strong>Spanish B: Mark booklets & analyze mistakes</strong>. Vocab review.
+                                            <span class="time-badge">Morning (10:30AM-12:00PM)</span>
+                                            <strong>Spanish B: Review Writing Practice</strong> - Check structures, layouts, and connectors. Build key expression lists.
                                         </span>
                                     </label>
                                 </li>
-                                <li class="task-item span">
+                                <li class="task-item math">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-thu-span-evening">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-math-ch7-8">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Evening (6PM-8PM)</span>
-                                            <strong>Spanish B: Final layout formats check</strong> - Artículo, Blog, Correo layout formulas.
+                                            <span class="time-badge">Afternoon (1:00PM-3:30PM)</span>
+                                            <strong>Math AA HL: Ch 7 (Sequences & Series) & Ch 8 (Binomial Expansion)</strong> - Arithmetic/geometric, sums, nCr expansions.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-math-ch9-11">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (3:30PM-5:30PM)</span>
+                                            <strong>Math AA HL: Ch 9 (Induction) & Ch 10-11 (Trig Identities & Equations)</strong> - 4-step induction, double/compound trig equations.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-math-drill">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6:00PM-8:30PM)</span>
+                                            <strong>Math AA HL: Past Paper Questions</strong> - Drill 8+ questions on Sequences, Series, Induction, and Trig.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-math-recall">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Recall (8:30PM-9:00PM)</span>
+                                            <strong>Nightly Recall: Induction proof template & trig identities</strong>.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="leave-thu-span-recall">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-sleep">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Recall (8:30PM-9PM)</span>
-                                            <strong>Nightly Recall: High-value Spanish expressions drill</strong>.
+                                            <span class="time-badge">9:30 PM</span>
+                                            <strong>SLEEP 😴</strong> - Night before Spanish P1 (Writing) exam.
                                         </span>
                                     </label>
                                 </li>
@@ -1051,37 +1131,217 @@
                                         <span class="checkmark"></span>
                                         <span class="task-text">
                                             <span class="time-badge">7:50 AM - 9:05 AM</span>
-                                            <strong>EXAM: Spanish B SL P1</strong>
+                                            <strong>EXAM: Spanish B SL P1 (Writing)</strong>
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="fri-math-ch12-13">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (10:00AM-12:30PM)</span>
+                                            <strong>Math AA HL: Ch 12-13 (More Trig) & Ch 19 (Curves)</strong> - Reciprocal/inverse trig, tangent/normal lines, related rates.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="fri-math-ch20">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (1:30PM-4:00PM)</span>
+                                            <strong>Math AA HL: Ch 20B-D (Optimization) & Ch 17-18 Calculus Review</strong> - Max/min problems, differentiation rules.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item span">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-fri-span2-prep">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="fri-span-p2-prep">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Afternoon (2PM-5:30PM)</span>
-                                            <strong>Spanish B: P2 Writing practice</strong> - Draft informal letter and blog post on Experiences.
+                                            <span class="time-badge">Afternoon (4:00PM-5:30PM)</span>
+                                            <strong>Spanish B: P2 Reading & Listening Practice</strong> - Timed practice on reading passages (45m) and listening comprehension (30m).
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item eng">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-fri-eng1-prep">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="fri-eng-p1">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Evening (6PM-8PM)</span>
-                                            <strong>English SL: P1 Infographics review</strong> - Analyze layouts, font styles, and appeals.
+                                            <span class="time-badge">Evening (6:00PM-8:00PM)</span>
+                                            <strong>English SL: P1 Infographics Review</strong> - Learn the APPLES analysis framework, analyze 2 sample texts.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="fri-math-calc-drill">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (8:00PM-10:00PM)</span>
+                                            <strong>Math AA HL: Calculus Past Paper Questions</strong> - Timed practice on Ch 17-20.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-fri-weekend">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="fri-recall">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Weekend (Sat-Sun)</span>
-                                            <strong>Study:</strong> Full 9.5-hour weekend grind: Math P1 non-calc mock, English P2 essays, and Spanish P2 writing formats.
+                                            <span class="time-badge">Recall (10:00PM-10:30PM)</span>
+                                            <strong>Nightly Recall: Math differentiation rules & English P1 analysis framework</strong>.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Sat, June 6</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sat-math-ch1-2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (8:00AM-10:30AM)</span>
+                                            <strong>Math AA HL: Ch 1-2 Review</strong> - Functions (domain, range, composite, inverse) and Quadratics.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sat-math-ch3-4">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (10:30AM-1:00PM)</span>
+                                            <strong>Math AA HL: Ch 3-4 Review</strong> - Exponentials, logarithms, growth/decay.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sat-math-mock1">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2:00PM-4:30PM)</span>
+                                            <strong>Math AA HL: TIMED P1 Mock #1</strong> - 2-hour non-calculator mock. Grade and analyze errors.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item eng">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sat-eng-p2-gatsby">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (4:30PM-6:00PM)</span>
+                                            <strong>English SL: Gatsby Quotes & Structure</strong> - Memorize P2 comparative essay structure, 10 versatile quotes.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item eng">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sat-eng-p2-kite">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6:00PM-8:00PM)</span>
+                                            <strong>English SL: Kite Runner Quotes & Thesis</strong> - Memorize 10 quotes, practice writing thesis statements.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sat-math-review">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (8:00PM-10:00PM)</span>
+                                            <strong>Math AA HL: Mock #1 Mistakes Audit</strong> - Re-do wrong questions, drill 5 new questions on weak topics.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sat-recall">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Recall (10:00PM-10:30PM)</span>
+                                            <strong>Nightly Recall: Math mistake patterns & English quotes flash drill</strong>.
+                                        </span>
+                                    </label>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="timeline-day">
+                            <div class="day-header">Sun, June 7</div>
+                            <ul class="task-list">
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sun-math-mock1-gaps">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (8:00AM-10:30AM)</span>
+                                            <strong>Math AA HL: Fix Mock #1 Gaps</strong> - Re-do wrong questions closed-book, topical past paper drills.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sun-math-mock2">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Morning (10:30AM-1:00PM)</span>
+                                            <strong>Math AA HL: TIMED P2 Mock #1</strong> - 2-hour calculator active mock. practice GDC solvers.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sun-math-mock2-grade">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (2:00PM-3:30PM)</span>
+                                            <strong>Math AA HL: Grade Mock #2 & GDC Check</strong> - Log mistakes, review graphing calculator shortcuts.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item span">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sun-span-final">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (3:30PM-5:30PM)</span>
+                                            <strong>Spanish B: Final Paper 2 Practice</strong> - Timed reading passage (45m) and listening audio comprehension (30m).
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item eng">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sun-eng-p2-essay">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6:00PM-8:00PM)</span>
+                                            <strong>English SL: P2 Comparative Outline Practice</strong> - Timed outline + write 2 body paragraphs.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item eng">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sun-eng-p1-final">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (8:00PM-9:00PM)</span>
+                                            <strong>English SL: P1 Final Checklist</strong> - Quick review of infographic analysis techniques (APPLES).
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="sun-sleep">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">9:30 PM</span>
+                                            <strong>SLEEP 😴</strong> - Night before Spanish P2 (Listening/Reading) & English P1 exams.
                                         </span>
                                     </label>
                                 </li>
@@ -1095,8 +1355,8 @@
                                         <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-span2">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">7:50 AM - 8:50 AM</span>
-                                            <strong>EXAM: Spanish B SL P2</strong>
+                                            <span class="time-badge">7:50 AM - 9:05 AM</span>
+                                            <strong>EXAM: Spanish B SL P2 (Listening & Reading)</strong>
                                         </span>
                                     </label>
                                 </li>
@@ -1112,31 +1372,51 @@
                                 </li>
                                 <li class="task-item eng">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-eng2">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="mon-eng-p2-final">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Afternoon (2PM-5:30PM)</span>
-                                            <strong>English SL: P2 Quote & Essay drills</strong> - Practice the "twisting strategy" on past paper prompts.
+                                            <span class="time-badge">Afternoon (12:30PM-2:30PM)</span>
+                                            <strong>English SL: P2 Final Quote Blitz</strong> - Review essay structure, active recall on Gatsby & Kite Runner quotes.
                                         </span>
                                     </label>
                                 </li>
-                                <li class="task-item eng">
+                                <li class="task-item math">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-eng2-evening">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="mon-math-ch5-6">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Evening (6PM-8PM)</span>
-                                            <strong>English SL: Complete Gatsby/Kite Runner comparative outline.</strong>
+                                            <span class="time-badge">Afternoon (2:30PM-5:30PM)</span>
+                                            <strong>Math AA HL: Ch 5-6 Practice</strong> - Transformations + Complex numbers past paper questions.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="mon-math-ch7-8">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6:00PM-8:30PM)</span>
+                                            <strong>Math AA HL: Ch 7-8 Practice</strong> - Sequences, series, binomial expansion past papers.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="mon-recall">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Recall (8:30PM-9:00PM)</span>
+                                            <strong>Nightly Recall: English P2 comparative quotes & Math formulas</strong>.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-mon-eng2-recall">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="mon-sleep">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Recall (8:30PM-9PM)</span>
-                                            <strong>Nightly Recall: High-value quotes check.</strong>
+                                            <span class="time-badge">9:30 PM</span>
+                                            <strong>SLEEP 😴</strong> - Night before English P2 exam.
                                         </span>
                                     </label>
                                 </li>
@@ -1157,31 +1437,51 @@
                                 </li>
                                 <li class="task-item math">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-tue-math">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-math-ch9-11">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Afternoon (2PM-5:30PM)</span>
-                                            <strong>Math AA HL: P1 Concept Review</strong> - Core formulas, integration, and functions.
+                                            <span class="time-badge">Morning (10:30AM-1:00PM)</span>
+                                            <strong>Math AA HL: Ch 9-11 Past Papers</strong> - Induction proofs + trig identities/equations.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item math">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-tue-math-evening">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-math-ch12-18">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Evening (6PM-8PM)</span>
-                                            <strong>Math AA HL: P1 Paper Questions</strong> - Practice non-calculator past paper questions.
+                                            <span class="time-badge">Afternoon (2:00PM-5:30PM)</span>
+                                            <strong>Math AA HL: Ch 12-13 + Ch 17-18 Review</strong> - Trig equations & Calculus differentiation rules.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-math-ch19-20">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6:00PM-8:30PM)</span>
+                                            <strong>Math AA HL: Ch 19-20 Curves & Optimization</strong> - Practice high-mark structured questions.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-math-formulas">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (8:30PM-10:00PM)</span>
+                                            <strong>Math AA HL: Formula Sheet Active Recall</strong> - Write out formula sheet from memory.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-tue-math-recall">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="tue-recall">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Recall (8:30PM-9PM)</span>
-                                            <strong>Nightly Recall: Math formulas active recall.</strong>
+                                            <span class="time-badge">Recall (10:00PM-10:30PM)</span>
+                                            <strong>Nightly Recall: Review flagged Math formulas</strong>.
                                         </span>
                                     </label>
                                 </li>
@@ -1192,41 +1492,71 @@
                             <ul class="task-list">
                                 <li class="task-item math">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-wed-math">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-math-mock3">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Morning (8:30AM-12:30PM)</span>
-                                            <strong>Math AA HL: P1 past paper mock run</strong> - Solve under timed conditions.
+                                            <span class="time-badge">Morning (8:00AM-10:30AM)</span>
+                                            <strong>Math AA HL: TIMED P1 Mock #2</strong> - 2-hour non-calculator mock. Grade immediately.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item math">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-wed-math-afternoon">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-math-mock3-grade">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Afternoon (2PM-5:30PM)</span>
-                                            <strong>Math AA HL: Mark mock exam & analyze mistakes</strong>. Focus on algebraic proofs.
+                                            <span class="time-badge">Morning (10:30AM-12:30PM)</span>
+                                            <strong>Math AA HL: Grade Mock #2</strong> - Re-do mistakes closed-book, log errors.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item math">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-wed-math-evening">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-math-drill-weak">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Evening (6PM-8PM)</span>
-                                            <strong>Math AA HL: Core formula sheet final review</strong>.
+                                            <span class="time-badge">Afternoon (1:30PM-4:00PM)</span>
+                                            <strong>Math AA HL: Targeted Chapter Drills</strong> - Grind 10 questions on your weakest chapter.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-math-gdc">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (4:00PM-6:00PM)</span>
+                                            <strong>Math AA HL: GDC Techniques Marathon</strong> - Graph intersections, EQUA solvers, stats, regression.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-math-mixed">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6:00PM-8:00PM)</span>
+                                            <strong>Math AA HL: Final Past Paper Blitz</strong> - Do 5 random mixed questions under pressure.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-math-cheat-sheet">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (8:00PM-9:00PM)</span>
+                                            <strong>Math AA HL: Personal Formula Cheat Sheet</strong> - Write out non-booklet equations.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-wed-math-recall">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="wed-sleep">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Recall (8:30PM-9PM)</span>
-                                            <strong>Nightly Recall: Mistakes log final audit before P1.</strong>
+                                            <span class="time-badge">9:30 PM</span>
+                                            <strong>SLEEP 😴</strong> - Night before Math P1 exam.
                                         </span>
                                     </label>
                                 </li>
@@ -1247,31 +1577,61 @@
                                 </li>
                                 <li class="task-item math">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-thu-math2">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-math-gdc-review">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Afternoon (2PM-5:30PM)</span>
-                                            <strong>Math AA HL: P2 GDC Hacks & Calculator Techniques</strong> - Vector solver, EQUA modes, matrix solvers.
+                                            <span class="time-badge">Morning (11:00AM-1:00PM)</span>
+                                            <strong>Math AA HL: GDC Techniques Audit</strong> - Practice 5 GDC-focused past paper questions.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item math">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-thu-math2-evening">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-math-mock-p2">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Evening (6PM-8PM)</span>
-                                            <strong>Math AA HL: Calculator past paper questions practice.</strong>
+                                            <span class="time-badge">Afternoon (2:00PM-4:30PM)</span>
+                                            <strong>Math AA HL: TIMED P2 Past Paper Practice</strong> - Solve a full calculator active paper.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-math-mock-p2-gaps">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Afternoon (4:30PM-6:00PM)</span>
+                                            <strong>Math AA HL: Fix P2 Mock Gaps</strong> - Optimize calculator settings, curve optimization.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-math-final-drill">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Evening (6:00PM-8:00PM)</span>
+                                            <strong>Math AA HL: Final Weakness Polish</strong> - Review weak spots identified from P1 this morning.
+                                        </span>
+                                    </label>
+                                </li>
+                                <li class="task-item math">
+                                    <label class="task-checkbox-container">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-math-recall">
+                                        <span class="checkmark"></span>
+                                        <span class="task-text">
+                                            <span class="time-badge">Recall (8:00PM-9:00PM)</span>
+                                            <strong>Nightly Recall: Review key formulas one last time</strong>.
                                         </span>
                                     </label>
                                 </li>
                                 <li class="task-item">
                                     <label class="task-checkbox-container">
-                                        <input type="checkbox" class="task-checkbox" data-task-id="exam-thu-math2-recall">
+                                        <input type="checkbox" class="task-checkbox" data-task-id="thu-sleep">
                                         <span class="checkmark"></span>
                                         <span class="task-text">
-                                            <span class="time-badge">Recall (8:30PM-9PM)</span>
-                                            <strong>Nightly Recall: GDC shortcuts & formula checks.</strong>
+                                            <span class="time-badge">9:30 PM</span>
+                                            <strong>SLEEP 😴</strong> - Night before Math P2 exam.
                                         </span>
                                     </label>
                                 </li>
