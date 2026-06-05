@@ -395,6 +395,12 @@ window.loadUserData = function(user) {
     // Start Real-Time Firestore Sync Listener
     window.unsubscribeFirestore = window.db.collection('study_data').doc(docId).onSnapshot((doc) => {
         if (!doc.exists) {
+            // Prevent race condition: if loading from cache and document is not found in cache,
+            // wait for the server response before assuming the document does not exist.
+            if (doc.metadata && doc.metadata.fromCache) {
+                console.log("Document not found in local cache. Waiting for server response...");
+                return;
+            }
             console.log("No remote database document found for: " + docId + ". Uploading local cache as backup...");
             window.hasLoadedUserData = true;
             if (!window.hasIncrementedVisit) {
